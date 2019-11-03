@@ -1,0 +1,23 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+    <div class="text-center">
+        <h1 class="display-4">Welcome</h1>
+
+        
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown">
+                    Select Your Position<span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="nav-link text-dark" asp-page="/LeftWing">Left Wing</a></li>
+                    <li><a class="nav-link text-dark" asp-page="/RightWing">Right Wing</a></li>
+                    <li><a class="nav-link text-dark" asp-page="/Engineering">Engineering</a></li>
+                    <li><a class="nav-link text-dark" asp-page="/Communications">Communications</a></li>
+                    <li><a class="nav-link text-dark" asp-page="/Security">Security</a></li>
+                </ul>
+            </div>
+    </div>
