@@ -27,8 +27,9 @@ function startGame() {
 
 function gamearea() {
     this.canvas = document.createElement("canvas");
-    this.canvas.width = 500;
-    this.canvas.height = 300;
+    this.canvas.width = CANVAS_WIDTH;
+    this.canvas.height = CANVAS_HEIGHT;
+
     document.getElementById("gameCanvas").appendChild(this.canvas);
     this.context = this.canvas.getContext("2d");
     this.pause = false;
@@ -39,7 +40,7 @@ function gamearea() {
 
         this.timerInterval = setInterval(function () {
             this.currentTime =  new Date().getTime();
-        }, 1000); // update every second.
+        }, 10); // update every second.
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
             myGameArea.keys = (myGameArea.keys || []);
@@ -65,7 +66,8 @@ function component(width, height, color, x, y, type) {
     if (type == "text") {
         this.text = color;
     }
-    this.score = 0; this.width = width;
+    this.score = 0;
+    this.width = width;
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
@@ -135,10 +137,10 @@ function updateGameArea() {
         myGameArea.frameNo += 1;
         //myscore.score += 1;
 
-        if (myGameArea.frameNo == 1 || everyinterval(100)) {
+        if (myGameArea.frameNo == 1 || everyinterval(150)) {
             x = myGameArea.canvas.width;
             y = myGameArea.canvas.height - 100;
-            min = 20;
+            min = 60;
             max = 200;
             height = Math.floor(Math.random() * (max - min + 1) + min);
             min = 50;
@@ -148,16 +150,14 @@ function updateGameArea() {
             myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
         }
         for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x += -1.25;
+            myObstacles[i].x += -1;
             myObstacles[i].update();
         }
-        //myscore.text = "SCORE: " + myscore.score;
-        //myscore.update();
 
-        if (myGameArea.keys && myGameArea.keys[37]) { moveleft(null); }
-        if (myGameArea.keys && myGameArea.keys[39]) { moveright(null); }
-        if (myGameArea.keys && myGameArea.keys[38]) { moveup(null); }
-        if (myGameArea.keys && myGameArea.keys[40]) { movedown(null); }
+        if (myGameArea.keys && myGameArea.keys[KEY_LEFT]) { moveleft(null); }
+        if (myGameArea.keys && myGameArea.keys[KEY_RIGHT]) { moveright(null); }
+        if (myGameArea.keys && myGameArea.keys[KEY_UP]) { moveup(null); }
+        if (myGameArea.keys && myGameArea.keys[KEY_DOWN]) { movedown(null); }
 
         myGamePiece.x += myGamePiece.speedX;
         myGamePiece.y += myGamePiece.speedY;

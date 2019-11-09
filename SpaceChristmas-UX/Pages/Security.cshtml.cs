@@ -3,17 +3,17 @@ using Microsoft.Extensions.Logging;
 
 namespace SpaceChristmas_UX.Pages
 {
-    public class RightWingModel : PageModel
+    public class SecurityModel : PageModel
     {
-        private readonly ILogger<RightWingModel> _logger;
+        private readonly ILogger<SecurityModel> _logger;
 
-        public RightWingModel(ILogger<RightWingModel> logger)
+        public SecurityModel(ILogger<SecurityModel> logger)
         {
             _logger = logger;
         }
-
         public void OnGet()
         {
+
         }
     }
 }
