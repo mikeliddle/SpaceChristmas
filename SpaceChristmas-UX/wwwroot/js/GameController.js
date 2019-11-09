@@ -20,6 +20,8 @@ function startGame() {
     myGameArea = new gamearea();
     myGamePiece = new component(30, 30, "red", 10, 75);
     myscore = new component("15px", "Consolas", "white", 220, 25, "text");
+    this.endTime = new Date();
+    this.endTime.setMinutes(this.endTime.getMinutes() + 3);
     myGameArea.start();
 }
 
@@ -28,13 +30,16 @@ function gamearea() {
     this.canvas.width = 500;
     this.canvas.height = 300;
     document.getElementById("gameCanvas").appendChild(this.canvas);
-
     this.context = this.canvas.getContext("2d");
-   
     this.pause = false;
     this.frameNo = 0;
     this.start = function () {
+
         this.interval = setInterval(updateGameArea, 10);
+
+        this.timerInterval = setInterval(function () {
+            this.currentTime =  new Date().getTime();
+        }, 1000); // update every second.
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
             myGameArea.keys = (myGameArea.keys || []);
@@ -46,6 +51,7 @@ function gamearea() {
     }
     this.stop = function () {
         clearInterval(this.interval);
+        clearInterval(this.timerInterval);
         this.pause = true;
     }
     this.clear = function () {
@@ -95,8 +101,29 @@ function component(width, height, color, x, y, type) {
 
 function updateGameArea() {
     var x, y, min, max, height, gap;
+
+    this.currentTime = new Date().getTime();
+    var _endTime = this.endTime.getTime();
+
+    var difference = _endTime - this.currentTime;
+
+    var minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+     // TODO: update timer on screen.
+
+    if (difference < 0) {
+        clearInterval(this.timerInterval);
+        // TODO: end game successfully
+        myGameArea.stop();
+        document.getElementById("myfilter").style.display = "block";
+        document.getElementById("myrestartbutton").style.display = "block";
+        return;
+    }
+
     for (i = 0; i < myObstacles.length; i += 1) {
         if (myGamePiece.crashWith(myObstacles[i])) {
+            // TODO: failed
             myGameArea.stop();
             document.getElementById("myfilter").style.display = "block";
             document.getElementById("myrestartbutton").style.display = "block";
