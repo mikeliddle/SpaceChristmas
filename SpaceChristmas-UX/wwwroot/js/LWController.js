@@ -1,6 +1,8 @@
 ﻿var myGameArea;
 var myGamePiece;
 var myObstacles = [];
+var myTorpedos = [];
+var myPhasers = [];
 var myscore;
 
 function restartGame() {
@@ -17,30 +19,26 @@ function restartGame() {
 }
 
 function startGame() {
-    myGameArea = new gamearea();
-    myGamePiece = new component(30, 30, "red", 10, 75);
-    myscore = new component("15px", "Consolas", "white", 220, 25, "text");
+    //myGameArea = new gamearea();
+    myGamePiece = new component(30, 30, "red", 30, CANVAS_HEIGHT / 2);
+    myTimerLabel = new component("15px", "Consolas", "white", 220, 25, "text");
     this.endTime = new Date();
     this.endTime.setMinutes(this.endTime.getMinutes() + 3);
     myGameArea.start();
 }
 
-function gamearea() {
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = CANVAS_WIDTH;
-    this.canvas.height = CANVAS_HEIGHT;
+var myGameArea = {
+    canvas: document.createElement("canvas"),
+    start: function () {
+        this.canvas.width = CANVAS_WIDTH;
+        this.canvas.height = CANVAS_HEIGHT;
+        this.context = this.canvas.getContext("2d");
 
-    document.getElementById("gameCanvas").appendChild(this.canvas);
-    this.context = this.canvas.getContext("2d");
-    this.pause = false;
-    this.frameNo = 0;
-    this.start = function () {
+        document.getElementById("gameCanvas").appendChild(this.canvas);
 
-        this.interval = setInterval(updateGameArea, 10);
-
-        this.timerInterval = setInterval(function () {
-            this.currentTime =  new Date().getTime();
-        }, 10); // update every second.
+        this.pause = false;
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
             myGameArea.keys = (myGameArea.keys || []);
@@ -49,13 +47,11 @@ function gamearea() {
         window.addEventListener('keyup', function (e) {
             myGameArea.keys[e.keyCode] = (e.type == "keydown");
         })
-    }
-    this.stop = function () {
+    },
+    stop: function () {
         clearInterval(this.interval);
-        clearInterval(this.timerInterval);
-        this.pause = true;
-    }
-    this.clear = function () {
+    },
+    clear: function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
@@ -63,26 +59,26 @@ function gamearea() {
 function component(width, height, color, x, y, type) {
 
     this.type = type;
-    if (type == "text") {
-        this.text = color;
-    }
-    this.score = 0;
     this.width = width;
     this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
+    this.speed = 0;
+    this.angle = 0;
+    this.moveAngle = 0;
     this.x = x;
     this.y = y;
     this.update = function () {
         ctx = myGameArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = color;
+        ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+        ctx.restore();
+    }
+    this.newPos = function () {
+        this.angle += this.moveAngle * Math.PI / 180;
+        this.x += this.speed * Math.sin(this.angle);
+        this.y -= this.speed * Math.cos(this.angle);
     }
     this.crashWith = function (otherobj) {
         var myleft = this.x;
@@ -135,36 +131,34 @@ function updateGameArea() {
     if (myGameArea.pause == false) {
         myGameArea.clear();
         myGameArea.frameNo += 1;
-        //myscore.score += 1;
+        myGamePiece.moveAngle = 0;
 
-        if (myGameArea.frameNo == 1 || everyinterval(150)) {
-            x = myGameArea.canvas.width;
-            y = myGameArea.canvas.height - 100;
-            min = 60;
-            max = 200;
-            height = Math.floor(Math.random() * (max - min + 1) + min);
-            min = 50;
-            max = 200;
-            gap = Math.floor(Math.random() * (max - min + 1) + min);
-            myObstacles.push(new component(10, height, "green", x, 0));
-            myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
-        }
         for (i = 0; i < myObstacles.length; i += 1) {
             myObstacles[i].x += -1;
             myObstacles[i].update();
         }
 
-        if (myGameArea.keys && myGameArea.keys[KEY_LEFT]) { moveleft(null); }
-        if (myGameArea.keys && myGameArea.keys[KEY_RIGHT]) { moveright(null); }
-        if (myGameArea.keys && myGameArea.keys[KEY_UP]) { moveup(null); }
-        if (myGameArea.keys && myGameArea.keys[KEY_DOWN]) { movedown(null); }
+        myGamePiece.moveAngle = 0;
+        myGamePiece.speed = 0;
 
-        myGamePiece.x += myGamePiece.speedX;
-        myGamePiece.y += myGamePiece.speedY;
-        myGamePiece.speedX = 0;
-        myGamePiece.speedY = 0;
+        if (myGameArea.keys && myGameArea.keys[KEY_LEFT]) { rotateLeft(); }
+        if (myGameArea.keys && myGameArea.keys[KEY_RIGHT]) { rotateRight(); }
+        if (myGameArea.keys && myGameArea.keys[KEY_UP]) { firePhaser(); }
+        if (myGameArea.keys && myGameArea.keys[KEY_SPACE]) { fireTorpedo(); }
+
+        myGamePiece.newPos();
         myGamePiece.update();
     }
+}
+
+function firePhaser() {
+
+}
+
+function fireTorpedo() {
+    myTorpedos.push({
+
+    })
 }
 
 function everyinterval(n) {
@@ -172,20 +166,12 @@ function everyinterval(n) {
     return false;
 }
 
-function moveup(e) {
-    myGamePiece.speedY = -1;
+function rotateRight() {
+    myGamePiece.moveAngle = 1
 }
 
-function movedown() {
-    myGamePiece.speedY = 1;
-}
-
-function moveleft() {
-    myGamePiece.speedX = -1;
-}
-
-function moveright() {
-    myGamePiece.speedX = 1;
+function rotateLeft() {
+    myGamePiece.moveAngle = -1;
 }
 
 function clearmove(e) {

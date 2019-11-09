@@ -1,7 +1,11 @@
 ﻿var myGameArea;
 var myGamePiece;
 var myObstacles = [];
-var myscore;
+var myTimerLabel;
+
+funciton loadScreen() {
+
+}
 
 function restartGame() {
     document.getElementById("myfilter").style.display = "none";
@@ -11,7 +15,7 @@ function restartGame() {
     myGameArea = {};
     myGamePiece = {};
     myObstacles = [];
-    myscore = {};
+    myTimerLabel = {};
     document.getElementById("gameCanvas").innerHTML = "";
     startGame()
 }
@@ -19,7 +23,7 @@ function restartGame() {
 function startGame() {
     myGameArea = new gamearea();
     myGamePiece = new component(30, 30, "red", 10, 75);
-    myscore = new component("15px", "Consolas", "white", 220, 25, "text");
+    myTimerLabel = new component("15px", "Consolas", "white", 10, 25, "text");
     this.endTime = new Date();
     this.endTime.setMinutes(this.endTime.getMinutes() + 3);
     myGameArea.start();
@@ -40,7 +44,7 @@ function gamearea() {
 
         this.timerInterval = setInterval(function () {
             this.currentTime = new Date().getTime();
-        }, 10); // update every second.
+        }, 10); // update every 1/10.
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
             myGameArea.keys = (myGameArea.keys || []);
@@ -111,8 +115,7 @@ function updateGameArea() {
 
     var minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
     var seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-    // TODO: update timer on screen.
+    var centiseconds = Math.floor((difference % (1000 * 60) / 10));
 
     if (difference < 0) {
         clearInterval(this.timerInterval);
@@ -135,7 +138,9 @@ function updateGameArea() {
     if (myGameArea.pause == false) {
         myGameArea.clear();
         myGameArea.frameNo += 1;
-        //myscore.score += 1;
+
+        myTimerLabel.text = minutes + ":" + ("0" + seconds).slice(-2) + "." + centiseconds;
+        myTimerLabel.update();
 
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
             x = myGameArea.canvas.width;

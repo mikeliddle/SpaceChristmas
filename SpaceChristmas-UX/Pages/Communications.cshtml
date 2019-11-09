@@ -1,15 +1,16 @@
 ﻿@page
-@model CommunicationsModel
+@model SpaceChristmas_UX.Pages.CommunicationsModel
 @{
     ViewData["Title"] = "Communications";
 }
+
 <h1>@ViewData["Title"]</h1>
 
-<body onload="startGame()">
+<body onload="loadScreen()">
     <center>
         <div id="myfilter" style="position:absolute;background-color:#000000;opacity:0.3;width:700px;height:500px;display:none"></div>
         <div id="myrestartbutton" style="position:absolute;padding-top:225px;padding-left:300px;display:none;"><button onclick="restartGame()">Try Again?</button></div>
         <div id="gameCanvas" style="background-color:#000000;width:700px;height:500px;"></div>
     </center>
 </body>
-@*<script src="~/js/LWController.js" />*@
+<script src="~/js/CommunicationsController.js"></script>
