@@ -3,7 +3,7 @@ var myGamePiece;
 var myObstacles = [];
 var myTimerLabel;
 
-funciton loadScreen() {
+function loadScreen() {
 
 }
 
