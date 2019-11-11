@@ -156,9 +156,11 @@ function firePhaser() {
 }
 
 function fireTorpedo() {
-    myTorpedos.push({
+    var torpedo = new component(10, 10, "blue", myGamePiece.x + 30, myGamePiece.y, "torpedo");
+    torpedo.moveAngle = myGamePiece.moveAngle;
+    // do math for speedx and y.
+    myTorpedos.push();
 
-    })
 }
 
 function everyinterval(n) {
