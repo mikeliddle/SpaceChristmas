@@ -3,7 +3,9 @@ var myGamePiece;
 var myObstacles = [];
 var myTorpedos = [];
 var myPhasers = [];
-var myscore;
+var torpedoRate = 50;
+var torpedoState = 51;
+var myScore = {};
 
 function restartGame() {
     document.getElementById("myfilter").style.display = "none";
@@ -13,7 +15,7 @@ function restartGame() {
     myGameArea = {};
     myGamePiece = {};
     myObstacles = [];
-    myscore = {};
+    myScore = {};
     document.getElementById("gameCanvas").innerHTML = "";
     startGame()
 }
@@ -21,7 +23,8 @@ function restartGame() {
 function startGame() {
     //myGameArea = new gamearea();
     myGamePiece = new component(30, 30, "red", 30, CANVAS_HEIGHT / 2);
-    myTimerLabel = new component("15px", "Consolas", "white", 220, 25, "text");
+    myScore = new component("15px", "Consolas", "white", 220, 25, "text");
+    myScore.score = 0;
     this.endTime = new Date();
     this.endTime.setMinutes(this.endTime.getMinutes() + 3);
     myGameArea.start();
@@ -61,6 +64,11 @@ function component(width, height, color, x, y, type) {
     this.type = type;
     this.width = width;
     this.height = height;
+
+    if (type == "text") {
+        this.text = color;
+    }
+
     this.speed = 0;
     this.angle = 0;
     this.moveAngle = 0;
@@ -68,17 +76,26 @@ function component(width, height, color, x, y, type) {
     this.y = y;
     this.update = function () {
         ctx = myGameArea.context;
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.rotate(this.angle);
-        ctx.fillStyle = color;
-        ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
-        ctx.restore();
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.angle);
+            ctx.fillStyle = color;
+            ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+            ctx.restore();
+        }
     }
     this.newPos = function () {
-        this.angle += this.moveAngle * Math.PI / 180;
-        this.x += this.speed * Math.sin(this.angle);
-        this.y -= this.speed * Math.cos(this.angle);
+        if (this.type != "torpedo") {
+            this.angle += this.moveAngle * Math.PI / 180;
+        }
+
+        this.y += this.speed * Math.sin(this.angle);
+        this.x += this.speed * Math.cos(this.angle);
     }
     this.crashWith = function (otherobj) {
         var myleft = this.x;
@@ -100,17 +117,9 @@ function component(width, height, color, x, y, type) {
 function updateGameArea() {
     var x, y, min, max, height, gap;
 
-    this.currentTime = new Date().getTime();
-    var _endTime = this.endTime.getTime();
+     // TODO: update kill count on screen.
 
-    var difference = _endTime - this.currentTime;
-
-    var minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-     // TODO: update timer on screen.
-
-    if (difference < 0) {
+    if (myScore.score >= 25) {
         clearInterval(this.timerInterval);
         // TODO: end game successfully
         myGameArea.stop();
@@ -120,12 +129,21 @@ function updateGameArea() {
     }
 
     for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
+        var obstacle = myObstacles[i];
+        if (myGamePiece.crashWith(obstacle)) {
             // TODO: failed
             myGameArea.stop();
             document.getElementById("myfilter").style.display = "block";
             document.getElementById("myrestartbutton").style.display = "block";
             return;
+        }
+        // hit an enemy
+        for (j = 0; j < myTorpedos.length; j += 1) {
+            if (obstacle.crashWith(myTorpedos[j])) {
+                myObstacles.splice(i, 1);
+                myTorpedos.splice(j, 1);
+                myScore.score += 1;
+            }
         }
     }
     if (myGameArea.pause == false) {
@@ -133,19 +151,44 @@ function updateGameArea() {
         myGameArea.frameNo += 1;
         myGamePiece.moveAngle = 0;
 
+        myScore.text = "Score: " + myScore.score;
+        myScore.update();
+
+        // add enemies
+        if (myGameArea.frameNo == 1 || everyinterval(50)) {
+            x = myGameArea.canvas.width;
+            
+            min = 0;
+            max = myGameArea.canvas.height;
+            y = Math.floor(Math.random() * (max - min + 1) + min);
+
+            myObstacles.push(new component(30, 30, "green", x, y, "enemy"));
+        }
+
+        // move enemies
         for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x += -1;
+            myObstacles[i].x += -2;
             myObstacles[i].update();
         }
 
+        // move torpedos
+        for (i = 0; i < myTorpedos.length; i += 1) {
+            myTorpedos[i].newPos();
+            myTorpedos[i].update();
+        }
+        torpedoState += 1;
+
+        // reset game piece
         myGamePiece.moveAngle = 0;
         myGamePiece.speed = 0;
 
+        // handle keyboard events
         if (myGameArea.keys && myGameArea.keys[KEY_LEFT]) { rotateLeft(); }
         if (myGameArea.keys && myGameArea.keys[KEY_RIGHT]) { rotateRight(); }
         if (myGameArea.keys && myGameArea.keys[KEY_UP]) { firePhaser(); }
         if (myGameArea.keys && myGameArea.keys[KEY_SPACE]) { fireTorpedo(); }
 
+        // update game piece
         myGamePiece.newPos();
         myGamePiece.update();
     }
@@ -156,11 +199,15 @@ function firePhaser() {
 }
 
 function fireTorpedo() {
-    var torpedo = new component(10, 10, "blue", myGamePiece.x + 30, myGamePiece.y, "torpedo");
-    torpedo.moveAngle = myGamePiece.moveAngle;
-    // do math for speedx and y.
-    myTorpedos.push();
+    if (torpedoState > torpedoRate) {
+        torpedoState = 0;
+        var torpedo = new component(10, 10, "blue", myGamePiece.x, myGamePiece.y, "torpedo");
 
+        torpedo.angle = myGamePiece.angle;
+        torpedo.speed = 10;
+
+        myTorpedos.push(torpedo);
+    }
 }
 
 function everyinterval(n) {
