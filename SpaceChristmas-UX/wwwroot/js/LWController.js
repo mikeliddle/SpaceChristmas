@@ -2,13 +2,15 @@
 var myGamePiece;
 var myObstacles = [];
 var myTorpedos = [];
-var myPhasers = [];
-var torpedoRate = 50;
-var torpedoState = 51;
+var torpedoRate = 30;
+var torpedoState = torpedoRate + 1;
 var myScore = {};
 
+function loadScreen() {
+    
+}
+
 function restartGame() {
-    document.getElementById("myfilter").style.display = "none";
     document.getElementById("myrestartbutton").style.display = "none";
     myGameArea.stop();
     myGameArea.clear();
@@ -21,27 +23,34 @@ function restartGame() {
 }
 
 function startGame() {
-    //myGameArea = new gamearea();
-    myGamePiece = new component(30, 30, "red", 30, CANVAS_HEIGHT / 2);
-    myScore = new component("15px", "Consolas", "white", 220, 25, "text");
+    myGameArea = new gamearea();
+    myGamePiece = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 30, CANVAS_HEIGHT / 2);
+    myScore = new component("32px", "Consolas", "white", 220, 25, "text");
     myScore.score = 0;
-    this.endTime = new Date();
-    this.endTime.setMinutes(this.endTime.getMinutes() + 3);
+
+    if (document.getElementById("instructionLabel")) {
+        document.getElementById("instructionLabel").style.display = "none";
+        document.getElementById("mystartbutton").style.display = "none";
+    }
+    
+
     myGameArea.start();
 }
 
-var myGameArea = {
-    canvas: document.createElement("canvas"),
-    start: function () {
-        this.canvas.width = CANVAS_WIDTH;
-        this.canvas.height = CANVAS_HEIGHT;
-        this.context = this.canvas.getContext("2d");
+function gamearea() {
+    this.canvas = document.createElement("canvas");
+    this.canvas.width = CANVAS_WIDTH;
+    this.canvas.height = CANVAS_HEIGHT;
 
-        document.getElementById("gameCanvas").appendChild(this.canvas);
+    document.getElementById("gameCanvas").appendChild(this.canvas);
 
-        this.pause = false;
-        this.frameNo = 0;
+    this.context = this.canvas.getContext("2d");
+    this.pause = false;
+    this.frameNo = 0;
+
+    this.start = function () {    
         this.interval = setInterval(updateGameArea, 20);
+
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
             myGameArea.keys = (myGameArea.keys || []);
@@ -51,10 +60,10 @@ var myGameArea = {
             myGameArea.keys[e.keyCode] = (e.type == "keydown");
         })
     },
-    stop: function () {
+    this.stop = function () {
         clearInterval(this.interval);
     },
-    clear: function () {
+    this.clear = function () {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 }
@@ -62,18 +71,19 @@ var myGameArea = {
 function component(width, height, color, x, y, type) {
 
     this.type = type;
-    this.width = width;
-    this.height = height;
 
     if (type == "text") {
         this.text = color;
     }
 
     this.speed = 0;
+    this.width = width;
+    this.height = height;
     this.angle = 0;
     this.moveAngle = 0;
     this.x = x;
     this.y = y;
+
     this.update = function () {
         ctx = myGameArea.context;
         if (this.type == "text") {
@@ -117,14 +127,14 @@ function component(width, height, color, x, y, type) {
 function updateGameArea() {
     var x, y, min, max, height, gap;
 
-     // TODO: update kill count on screen.
-
     if (myScore.score >= 25) {
+        // End Successfully
         clearInterval(this.timerInterval);
-        // TODO: end game successfully
+        myGameArea.clear();
         myGameArea.stop();
-        document.getElementById("myfilter").style.display = "block";
-        document.getElementById("myrestartbutton").style.display = "block";
+        
+        document.getElementById("successLabel").style.display = "block";
+
         return;
     }
 
@@ -133,7 +143,7 @@ function updateGameArea() {
         if (myGamePiece.crashWith(obstacle)) {
             // TODO: failed
             myGameArea.stop();
-            document.getElementById("myfilter").style.display = "block";
+            
             document.getElementById("myrestartbutton").style.display = "block";
             return;
         }
@@ -162,12 +172,12 @@ function updateGameArea() {
             max = myGameArea.canvas.height;
             y = Math.floor(Math.random() * (max - min + 1) + min);
 
-            myObstacles.push(new component(30, 30, "green", x, y, "enemy"));
+            myObstacles.push(new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, OBSTACLE_COLOR, x, y, "enemy"));
         }
 
         // move enemies
         for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x += -2;
+            myObstacles[i].x += OBSTACLE_SPEED;
             myObstacles[i].update();
         }
 
@@ -185,7 +195,6 @@ function updateGameArea() {
         // handle keyboard events
         if (myGameArea.keys && myGameArea.keys[KEY_LEFT]) { rotateLeft(); }
         if (myGameArea.keys && myGameArea.keys[KEY_RIGHT]) { rotateRight(); }
-        if (myGameArea.keys && myGameArea.keys[KEY_UP]) { firePhaser(); }
         if (myGameArea.keys && myGameArea.keys[KEY_SPACE]) { fireTorpedo(); }
 
         // update game piece
@@ -194,17 +203,13 @@ function updateGameArea() {
     }
 }
 
-function firePhaser() {
-
-}
-
 function fireTorpedo() {
     if (torpedoState > torpedoRate) {
         torpedoState = 0;
-        var torpedo = new component(10, 10, "blue", myGamePiece.x, myGamePiece.y, "torpedo");
+        var torpedo = new component(TORPEDO_HEIGHT, TORPEDO_HEIGHT, TORPEDO_COLOR, myGamePiece.x, myGamePiece.y, "torpedo");
 
         torpedo.angle = myGamePiece.angle;
-        torpedo.speed = 10;
+        torpedo.speed = TORPEDO_SPEED;
 
         myTorpedos.push(torpedo);
     }
@@ -216,11 +221,11 @@ function everyinterval(n) {
 }
 
 function rotateRight() {
-    myGamePiece.moveAngle = 1
+    myGamePiece.moveAngle = 2;
 }
 
 function rotateLeft() {
-    myGamePiece.moveAngle = -1;
+    myGamePiece.moveAngle = -2;
 }
 
 function clearmove(e) {

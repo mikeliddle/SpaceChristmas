@@ -1,14 +1,13 @@
 ﻿var myGameArea;
 var myGamePiece;
 var myObstacles = [];
-var myTimerLabel;
+var myTimerLabel = {};
 
 function loadScreen() {
 
 }
 
 function restartGame() {
-    document.getElementById("myfilter").style.display = "none";
     document.getElementById("myrestartbutton").style.display = "none";
     myGameArea.stop();
     myGameArea.clear();
@@ -22,10 +21,16 @@ function restartGame() {
 
 function startGame() {
     myGameArea = new gamearea();
-    myGamePiece = new component(30, 30, "red", 10, 75);
+    myGamePiece = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 10, 75);
     myTimerLabel = new component("15px", "Consolas", "white", 10, 25, "text");
     this.endTime = new Date();
-    this.endTime.setMinutes(this.endTime.getMinutes() + 3);
+    this.endTime.setMinutes(this.endTime.getMinutes() + 1.5);
+
+    if (document.getElementById("instructionLabel")) {
+        document.getElementById("instructionLabel").style.display = "none";
+        document.getElementById("mystartbutton").style.display = "none";
+    }
+
     myGameArea.start();
 }
 
@@ -35,16 +40,18 @@ function gamearea() {
     this.canvas.height = CANVAS_HEIGHT;
 
     document.getElementById("gameCanvas").appendChild(this.canvas);
+
     this.context = this.canvas.getContext("2d");
     this.pause = false;
     this.frameNo = 0;
-    this.start = function () {
 
+    this.start = function () {
         this.interval = setInterval(updateGameArea, 10);
 
         this.timerInterval = setInterval(function () {
             this.currentTime = new Date().getTime();
-        }, 10); // update every 1/10.
+        }, 10); // update every 1/100 sec.
+
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
             myGameArea.keys = (myGameArea.keys || []);
@@ -70,13 +77,14 @@ function component(width, height, color, x, y, type) {
     if (type == "text") {
         this.text = color;
     }
-    this.score = 0;
+
     this.width = width;
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
     this.x = x;
     this.y = y;
+
     this.update = function () {
         ctx = myGameArea.context;
         if (this.type == "text") {
@@ -118,11 +126,12 @@ function updateGameArea() {
     var centiseconds = Math.floor((difference % (1000 * 60) / 10));
 
     if (difference < 0) {
+        // End Successfully
         clearInterval(this.timerInterval);
-        // TODO: end game successfully
+        myGameArea.clear();
         myGameArea.stop();
-        document.getElementById("myfilter").style.display = "block";
-        document.getElementById("myrestartbutton").style.display = "block";
+        
+        document.getElementById("successLabel").style.display = "block";
         return;
     }
 
@@ -130,7 +139,7 @@ function updateGameArea() {
         if (myGamePiece.crashWith(myObstacles[i])) {
             // TODO: failed
             myGameArea.stop();
-            document.getElementById("myfilter").style.display = "block";
+            
             document.getElementById("myrestartbutton").style.display = "block";
             return;
         }
@@ -139,7 +148,7 @@ function updateGameArea() {
         myGameArea.clear();
         myGameArea.frameNo += 1;
 
-        myTimerLabel.text = minutes + ":" + ("0" + seconds).slice(-2) + "." + centiseconds;
+        myTimerLabel.text = ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2) + "." + centiseconds;
         myTimerLabel.update();
 
         if (myGameArea.frameNo == 1 || everyinterval(150)) {
@@ -151,8 +160,8 @@ function updateGameArea() {
             min = 50;
             max = 200;
             gap = Math.floor(Math.random() * (max - min + 1) + min);
-            myObstacles.push(new component(10, height, "green", x, 0));
-            myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
+            myObstacles.push(new component(OBSTACLE_WIDTH, height, OBSTACLE_COLOR, x, 0));
+            myObstacles.push(new component(OBSTACLE_WIDTH, x - height - gap, OBSTACLE_COLOR, x, height + gap));
         }
         for (i = 0; i < myObstacles.length; i += 1) {
             myObstacles[i].x += -1;
