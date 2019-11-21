@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SpaceChristmas.Models;
 
 namespace SpaceChristmas.Controllers
@@ -28,18 +26,13 @@ namespace SpaceChristmas.Controllers
             return await _context.Event.ToListAsync();
         }
 
-        // GET: api/Events/<guid>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> GetEvent(Guid id)
+        // GET: api/Events/<int>
+        [HttpGet("{sequenceNumber}")]
+        public async Task<ActionResult<IEnumerable<Event>>> GetEvent(int sequenceNumber)
         {
-            var @event = await _context.Event.FindAsync(id);
+            var @event = _context.Event.Include(e => e.SequenceNumber > sequenceNumber);
 
-            if (@event == null)
-            {
-                return NotFound();
-            }
-
-            return @event;
+            return await @event.ToListAsync();
         }
 
         // PUT: api/Events/<guid>

@@ -16,10 +16,10 @@ function restartGame() {
     myObstacles = [];
     myTimerLabel = {};
     document.getElementById("gameCanvas").innerHTML = "";
-    startGame()
+    startThrusterFlight()
 }
 
-function startGame() {
+function startThrusterFlight() {
     myGameArea = new gamearea();
     myGamePiece = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 10, 75);
     myTimerLabel = new component("15px", "Consolas", "white", 10, 25, "text");

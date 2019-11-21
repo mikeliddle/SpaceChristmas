@@ -7,7 +7,7 @@ var torpedoState = torpedoRate + 1;
 var myScore = {};
 
 function loadScreen() {
-    
+    startTacticalCombat();
 }
 
 function restartGame() {
@@ -19,10 +19,10 @@ function restartGame() {
     myObstacles = [];
     myScore = {};
     document.getElementById("gameCanvas").innerHTML = "";
-    startGame()
+    startTacticalCombat()
 }
 
-function startGame() {
+function startTacticalCombat() {
     myGameArea = new gamearea();
     myGamePiece = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 30, CANVAS_HEIGHT / 2);
     myScore = new component("32px", "Consolas", "white", 220, 25, "text");
@@ -33,7 +33,6 @@ function startGame() {
         document.getElementById("mystartbutton").style.display = "none";
     }
     
-
     myGameArea.start();
 }
 
@@ -130,10 +129,10 @@ function calculateAngleToGamePiece(piece) {
     c = Math.sqrt(a * a + b * b);
 
     angleC = 90 *  Math.PI / 180;
-    angleA = Math.asin(a * Math.sin(c) / c);
-    angleB = Math.asin(b * Math.sin(c) / c);
+    angleA = Math.asin(a * Math.sin(angleC) / c);
+    angleB = Math.asin(b * Math.sin(angleC) / c);
 
-    return 1.5 * Math.PI + angleB;
+    return (angleB - Math.PI / 2);
 }
 
 function updateGameArea() {
@@ -191,8 +190,8 @@ function updateGameArea() {
 
         // move enemies
         for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x = Math.sin(myObstacles[i].angle) * OBSTACLE_SPEED;
-            myObstacles[i].y = Math.cos(myObstacles[i].angle) * OBSTACLE_SPEED;
+            myObstacles[i].x += Math.sin(myObstacles[i].angle) * OBSTACLE_SPEED;
+            myObstacles[i].y -= Math.cos(myObstacles[i].angle) * OBSTACLE_SPEED;
             myObstacles[i].update();
         }
 
