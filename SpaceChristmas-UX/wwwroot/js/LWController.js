@@ -124,6 +124,18 @@ function component(width, height, color, x, y, type) {
     }
 }
 
+function calculateAngleToGamePiece(piece) {
+    a = piece.x - this.myGamePiece.x;
+    b = piece.y - this.myGamePiece.y;
+    c = Math.sqrt(a * a + b * b);
+
+    angleC = 90 *  Math.PI / 180;
+    angleA = Math.asin(a * Math.sin(c) / c);
+    angleB = Math.asin(b * Math.sin(c) / c);
+
+    return 1.5 * Math.PI + angleB;
+}
+
 function updateGameArea() {
     var x, y, min, max, height, gap;
 
@@ -171,13 +183,16 @@ function updateGameArea() {
             min = 0;
             max = myGameArea.canvas.height;
             y = Math.floor(Math.random() * (max - min + 1) + min);
+            var enemy = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, OBSTACLE_COLOR, x, y, "enemy");
+            enemy.angle = calculateAngleToGamePiece(enemy);
 
-            myObstacles.push(new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, OBSTACLE_COLOR, x, y, "enemy"));
+            myObstacles.push(enemy);
         }
 
         // move enemies
         for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x += OBSTACLE_SPEED;
+            myObstacles[i].x = Math.sin(myObstacles[i].angle) * OBSTACLE_SPEED;
+            myObstacles[i].y = Math.cos(myObstacles[i].angle) * OBSTACLE_SPEED;
             myObstacles[i].update();
         }
 
