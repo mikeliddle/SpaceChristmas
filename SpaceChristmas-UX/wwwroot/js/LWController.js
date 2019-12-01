@@ -5,9 +5,60 @@ var myTorpedos = [];
 var torpedoRate = 30;
 var torpedoState = torpedoRate + 1;
 var myScore = {};
+var eventQueue = [];
+
+
+// Components
+function newButton(title) {
+    var button = document.createElement("button");
+
+    button.innerHTML = title;
+
+    return button;
+}
+
+function newContainer(id, style) {
+    var container = document.createElement("div");
+
+    container.id = id;
+    container.style = style;
+
+    return container;
+}
+// end Components
 
 function loadScreen() {
-    startTacticalCombat();
+    
+    setInterval(eventLoop, 10);
+}
+
+function eventLoop() {
+    if (eventQueue.length > 0) {
+        var event = eventQueue[0];
+        eventQueue.splice(0, 1);
+
+        if (event.type === "prepareTacticalCombat") {
+            var instructionContainer = newContainer("instructionLabel", instructionStyle);
+            instructionContainer.innerHTML = "<h3>Use the left and right arrow keys to rotate the gun alignment. Use the space bar to fire torpedos.</h3>";
+            
+            var startContainer = newContainer("mystartbutton", startButtonStyle);
+            var startButton = newButton("Start");
+            startButton.classList.add("btn");
+            startButton.classList.add("btn-primary");
+            startButton.onclick = function () {
+                eventQueue.push({
+                    "type": "startTacticalCombat"
+                });
+            };
+
+            startContainer.appendChild(startButton);
+
+            document.getElementById("gameCanvas").appendChild(instructionContainer);
+            document.getElementById("gameCanvas").appendChild(startContainer);
+        } else if (event.type === "startTacticalCombat") {
+            startTacticalCombat();
+        }
+    }
 }
 
 function restartGame() {
@@ -17,9 +68,12 @@ function restartGame() {
     myGameArea = {};
     myGamePiece = {};
     myObstacles = [];
+    myTorpedos = [];
     myScore = {};
     document.getElementById("gameCanvas").innerHTML = "";
-    startTacticalCombat()
+    eventQueue.push({
+        "type": "startTacticalCombat"
+    });
 }
 
 function startTacticalCombat() {
@@ -38,6 +92,7 @@ function startTacticalCombat() {
 
 function gamearea() {
     this.canvas = document.createElement("canvas");
+    this.canvas.id = "innerGameCanvas";
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
 
@@ -143,8 +198,10 @@ function updateGameArea() {
         clearInterval(this.timerInterval);
         myGameArea.clear();
         myGameArea.stop();
-        
-        document.getElementById("successLabel").style.display = "block";
+
+        var successContainer = newContainer("successLabel", successStyle);
+        successContainer.innerHTML = "<h1>Success!!!</h1>";
+        document.getElementById("gameCanvas").appendChild(successContainer);
 
         return;
     }
@@ -154,8 +211,15 @@ function updateGameArea() {
         if (myGamePiece.crashWith(obstacle)) {
             // TODO: failed
             myGameArea.stop();
-            
-            document.getElementById("myrestartbutton").style.display = "block";
+
+            var restartContainer = newContainer("myrestartbutton", restartStyle);
+            var restartButton = newButton("Try Again?");
+            restartButton.classList.add("btn");
+            restartButton.classList.add("btn-primary");
+            restartButton.onclick = restartGame;
+            restartContainer.appendChild(restartButton);
+
+            document.getElementById("gameCanvas").appendChild(restartContainer);
             return;
         }
         // hit an enemy

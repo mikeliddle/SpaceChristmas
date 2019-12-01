@@ -21,3 +21,9 @@ var GAME_PIECE_HEIGHT = 30;
 var OBSTACLE_COLOR = "red";
 var OBSTACLE_WIDTH = 10;
 var OBSTACLE_SPEED = 2;
+
+// Elements
+var restartStyle = "position: absolute; padding - top: 225px; padding - left: 300px;";
+var successStyle = "position:relative;text-align:center;top: 30%;-ms-transform: translateY(-50%);transform: translateY(-50%);";
+var instructionStyle = "display:block;text-align:center;padding-top:30px;padding-left:30px;padding-right:30px;width:100%;";
+var startButtonStyle = "position:relative;top: 30%;-ms-transform: translateY(-50%);transform: translateY(-50%);text-align:center;display:block;";
