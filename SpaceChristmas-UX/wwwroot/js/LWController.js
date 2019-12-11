@@ -7,7 +7,6 @@ var torpedoState = torpedoRate + 1;
 var myScore = {};
 var eventQueue = [];
 
-
 // Components
 function newButton(title) {
     var button = document.createElement("button");
@@ -38,9 +37,11 @@ function eventLoop() {
         eventQueue.splice(0, 1);
 
         if (event.type === "prepareTacticalCombat") {
+            tearDownCoreUI();
+
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
             instructionContainer.innerHTML = "<h3>Use the left and right arrow keys to rotate the gun alignment. Use the space bar to fire torpedos.</h3>";
-            
+
             var startContainer = newContainer("mystartbutton", startButtonStyle);
             var startButton = newButton("Start");
             startButton.classList.add("btn");
@@ -57,10 +58,39 @@ function eventLoop() {
             document.getElementById("gameCanvas").appendChild(startContainer);
         } else if (event.type === "startTacticalCombat") {
             startTacticalCombat();
+        } else if (event.type === "tacticalCombatSuccess") {
+            // Report Success!
+        } else if (event.type === "firstLoad") {
+            firstLoad();
         }
     }
 }
 
+// core functionality
+function firstLoad() {
+    createCoreUI();
+}
+
+function createCoreUI() {
+    var mainView = newContainer("mainView", instructionStyle);
+    var canvas = document.createElement("canvas");
+    canvas.id = "innerMainCanvas";
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
+
+    mainView.appendChild(canvas);
+
+    var button = newButton("Raise Shields");
+
+    var gameContainer = document.getElementById("gameCanvas");
+    gameContainer.appendChild(mainView);
+}
+
+function tearDownView() {
+    document.getElementById("gameCanvas").innerHTML = "";
+}
+
+// tactical combat section
 function restartGame() {
     document.getElementById("myrestartbutton").style.display = "none";
     myGameArea.stop();
@@ -202,6 +232,8 @@ function updateGameArea() {
         var successContainer = newContainer("successLabel", successStyle);
         successContainer.innerHTML = "<h1>Success!!!</h1>";
         document.getElementById("gameCanvas").appendChild(successContainer);
+
+        eventQueue.push({ "type": "tacticalCombatSuccess" });
 
         return;
     }
