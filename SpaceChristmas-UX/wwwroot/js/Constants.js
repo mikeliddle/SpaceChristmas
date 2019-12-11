@@ -27,5 +27,4 @@ var restartStyle = "position: absolute; padding - top: 225px; padding - left: 30
 var successStyle = "position:relative;text-align:center;top: 30%;-ms-transform: translateY(-50%);transform: translateY(-50%);";
 var instructionStyle = "display:block;text-align:center;padding-top:30px;padding-left:30px;padding-right:30px;width:100%;";
 var startButtonStyle = "position:relative;top: 30%;-ms-transform: translateY(-50%);transform: translateY(-50%);text-align:center;display:block;";
-
-var gamePieceVertices = [{ "x": 150, "y": 50 }, { "x": 200, "y": 50 }, { "x": 150, "y": 100 }, { "x": 200, "y": 100 }, { "x": 250, "y": 125 }, { "x": 250, "y": 175 }, { "x": 200, "y": 200 }, { "x": 150, "y": 200 }, { "x": 200, "y": 250 }, { "x": 150, "y": 250 }, { "x": 50, "y": 200 }, { "x": 50, "y": 100 }];
+var mainCanvasId = "innerMainCanvas";

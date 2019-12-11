@@ -7,8 +7,8 @@ var torpedoState = torpedoRate + 1;
 var myScore = {};
 var eventQueue = [];
 var myShipForShields = {};
-var myFrontShield = {};
-var myRearShield = {};
+var myFrontShield = null;
+var myRearShield = null;
 
 // Components
 function newButton(title) {
@@ -30,7 +30,7 @@ function newContainer(id, style) {
 // end Components
 
 function loadScreen() {
-    
+    eventQueue.push({ "type": "firstLoad" });
     setInterval(eventLoop, 10);
 }
 
@@ -40,7 +40,7 @@ function eventLoop() {
         eventQueue.splice(0, 1);
 
         if (event.type === "prepareTacticalCombat") {
-            tearDownCoreUI();
+            tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
             instructionContainer.innerHTML = "<h3>Use the left and right arrow keys to rotate the gun alignment. Use the space bar to fire torpedos.</h3>";
@@ -62,8 +62,10 @@ function eventLoop() {
         } else if (event.type === "startTacticalCombat") {
             startTacticalCombat();
         } else if (event.type === "tacticalCombatSuccess") {
+            tearDownView();
             // Report Success!
         } else if (event.type === "firstLoad") {
+            tearDownView();
             firstLoad();
         }
     }
@@ -73,7 +75,6 @@ function eventLoop() {
 function firstLoad() {
     createCoreUI();
     setupShields();
-    setupEventListener();
 }
 
 function getMousePosition(canvas, ev) {
@@ -85,18 +86,20 @@ function getMousePosition(canvas, ev) {
 }
 
 function setupEventListener() {
-    var canvas = document.getElementById("innerMainCanvas");
-    canvas.addEventListener("click", function (ev) {
+    var canvas = document.getElementById(mainCanvasId);
+    canvas.addEventListener("mouseup", function (ev) {
+        
         var mousePosition = getMousePosition(canvas, ev);
         var context = canvas.getContext("2d");
 
         if (context.isPointInPath(myFrontShield.path, mousePosition.x, mousePosition.y)) {
             myFrontShield.active = !myFrontShield.active;
-            redrawShields("innerMainCanvas");
+            redrawShields(mainCanvasId);
         }
+
         if (context.isPointInPath(myRearShield.path, mousePosition.x, mousePosition.y)) {
             myRearShield.active = !myRearShield.active;
-            redrawShields("innerMainCanvas");
+            redrawShields(mainCanvasId);
         }
     });
 }
@@ -105,7 +108,7 @@ function setupShields() {
     myShipForShields = {};
     myFrontShield = { "active": false };
     myRearShield = { "active": false };
-    drawShipForShields("innerMainCanvas");
+    drawShipForShields(mainCanvasId);
 }
 
 function redrawShields(canvas_id) {
@@ -186,7 +189,7 @@ function drawShipForShields(canvas_id) {
 function createCoreUI() {
     var mainView = newContainer("mainView", instructionStyle);
     var canvas = document.createElement("canvas");
-    canvas.id = "innerMainCanvas";
+    canvas.id = mainCanvasId;
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
 
@@ -196,6 +199,8 @@ function createCoreUI() {
 
     var gameContainer = document.getElementById("gameCanvas");
     gameContainer.appendChild(mainView);
+
+    setupEventListener();
 }
 
 function tearDownView() {
@@ -228,7 +233,7 @@ function startTacticalCombat() {
         document.getElementById("instructionLabel").style.display = "none";
         document.getElementById("mystartbutton").style.display = "none";
     }
-    
+
     myGameArea.start();
 }
 
@@ -244,7 +249,7 @@ function gamearea() {
     this.pause = false;
     this.frameNo = 0;
 
-    this.start = function () {    
+    this.start = function () {
         this.interval = setInterval(updateGameArea, 20);
 
         window.addEventListener('keydown', function (e) {
@@ -256,12 +261,12 @@ function gamearea() {
             myGameArea.keys[e.keyCode] = (e.type == "keydown");
         })
     },
-    this.stop = function () {
-        clearInterval(this.interval);
-    },
-    this.clear = function () {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+        this.stop = function () {
+            clearInterval(this.interval);
+        },
+        this.clear = function () {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
 }
 
 function component(width, height, color, x, y, type) {
@@ -325,7 +330,7 @@ function calculateAngleToGamePiece(piece) {
     b = piece.y - this.myGamePiece.y;
     c = Math.sqrt(a * a + b * b);
 
-    angleC = 90 *  Math.PI / 180;
+    angleC = 90 * Math.PI / 180;
     angleA = Math.asin(a * Math.sin(angleC) / c);
     angleB = Math.asin(b * Math.sin(angleC) / c);
 
@@ -386,7 +391,7 @@ function updateGameArea() {
         // add enemies
         if (myGameArea.frameNo == 1 || everyinterval(50)) {
             x = myGameArea.canvas.width;
-            
+
             min = 0;
             max = myGameArea.canvas.height;
             y = Math.floor(Math.random() * (max - min + 1) + min);
