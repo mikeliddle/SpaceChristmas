@@ -6,6 +6,9 @@ var torpedoRate = 30;
 var torpedoState = torpedoRate + 1;
 var myScore = {};
 var eventQueue = [];
+var myShipForShields = {};
+var myFrontShield = {};
+var myRearShield = {};
 
 // Components
 function newButton(title) {
@@ -69,6 +72,115 @@ function eventLoop() {
 // core functionality
 function firstLoad() {
     createCoreUI();
+    setupShields();
+    setupEventListener();
+}
+
+function getMousePosition(canvas, ev) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: ev.clientX - rect.left,
+        y: ev.clientY - rect.top
+    };
+}
+
+function setupEventListener() {
+    var canvas = document.getElementById("innerMainCanvas");
+    canvas.addEventListener("click", function (ev) {
+        var mousePosition = getMousePosition(canvas, ev);
+        var context = canvas.getContext("2d");
+
+        if (context.isPointInPath(myFrontShield.path, mousePosition.x, mousePosition.y)) {
+            myFrontShield.active = !myFrontShield.active;
+            redrawShields("innerMainCanvas");
+        }
+        if (context.isPointInPath(myRearShield.path, mousePosition.x, mousePosition.y)) {
+            myRearShield.active = !myRearShield.active;
+            redrawShields("innerMainCanvas");
+        }
+    });
+}
+
+function setupShields() {
+    myShipForShields = {};
+    myFrontShield = { "active": false };
+    myRearShield = { "active": false };
+    drawShipForShields("innerMainCanvas");
+}
+
+function redrawShields(canvas_id) {
+    const context = document.getElementById(canvas_id).getContext("2d");
+
+    context.save();
+
+    if (myFrontShield.active) {
+        context.fillStyle = TORPEDO_COLOR;
+        context.fill(myFrontShield.path);
+    } else {
+        context.fillStyle = "black";
+        context.fill(myFrontShield.path);
+        context.strokeStyle = TORPEDO_COLOR;
+        context.stroke(myFrontShield.path);
+    }
+
+    if (myRearShield.active) {
+        context.fillStyle = TORPEDO_COLOR;
+        context.fill(myRearShield.path);
+    } else {
+        context.fillStyle = "black";
+        context.fill(myRearShield.path);
+        context.strokeStyle = TORPEDO_COLOR;
+        context.stroke(myRearShield.path);
+    }
+
+    context.restore();
+}
+
+function drawShipForShields(canvas_id) {
+    const context = document.getElementById(canvas_id).getContext("2d");
+
+    context.save();
+
+    context.fillStyle = GAME_PIECE_COLOR;
+    context.strokeStyle = GAME_PIECE_COLOR;
+
+    myShipForShields = new Path2D();
+
+    myShipForShields.moveTo(50, 100);
+    myShipForShields.lineTo(150, 50);
+    myShipForShields.lineTo(200, 50);
+    myShipForShields.lineTo(150, 100);
+    myShipForShields.lineTo(200, 100);
+    myShipForShields.lineTo(250, 125);
+    myShipForShields.lineTo(250, 175);
+    myShipForShields.lineTo(200, 200);
+    myShipForShields.lineTo(150, 200);
+    myShipForShields.lineTo(200, 250);
+    myShipForShields.lineTo(150, 250);
+    myShipForShields.lineTo(50, 200);
+    myShipForShields.lineTo(50, 100);
+
+    context.fill(myShipForShields);
+
+    var frontShield = new Path2D();
+    frontShield.arc(150, 150, 125, 0 - (Math.PI / 2) + .05, Math.PI / 2 - .05);
+    frontShield.arc(150, 150, 140, Math.PI / 2 - .05, 0 - (Math.PI / 2) + .05, true);
+    frontShield.closePath();
+    context.strokeStyle = TORPEDO_COLOR;
+    context.stroke(frontShield);
+
+    myFrontShield.path = frontShield;
+
+    var rearShield = new Path2D();
+    rearShield.arc(150, 150, 125, Math.PI / 2 + .05, 3 * Math.PI / 2 - .05);
+    rearShield.arc(150, 150, 140, 3 * Math.PI / 2 - .05, Math.PI / 2 + .05, true);
+    rearShield.closePath();
+    context.strokeStyle = TORPEDO_COLOR;
+    context.stroke(rearShield);
+
+    myRearShield.path = rearShield;
+
+    context.restore();
 }
 
 function createCoreUI() {
