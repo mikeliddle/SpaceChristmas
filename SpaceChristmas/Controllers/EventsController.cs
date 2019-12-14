@@ -13,10 +13,13 @@ namespace SpaceChristmas.Controllers
     public class EventsController : ControllerBase
     {
         private readonly EventContext _context;
+        private int sequenceNumber = 0;
 
         public EventsController(EventContext context)
         {
             _context = context;
+            _context.Database.EnsureCreated();
+            //var latestEvent = _context.Event.LastOrDefault
         }
 
         // GET: api/Events
@@ -73,10 +76,19 @@ namespace SpaceChristmas.Controllers
         [HttpPost]
         public async Task<ActionResult<Event>> PostEvent(Event @event)
         {
-            _context.Event.Add(@event);
-            await _context.SaveChangesAsync();
+            this.sequenceNumber += 1;
+            @event.SequenceNumber = this.sequenceNumber;
+            try
+            {
+                _context.Event.Add(@event);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
+                return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
+            }
+            catch (DbUpdateException)
+            {
+                return BadRequest("Duplicate Id Error!");
+            }
         }
 
         // DELETE: api/Events/<guid>

@@ -1,0 +1,40 @@
+﻿@page
+@model SpaceChristmas_UX.Pages.EngineeringModel
+@{
+    ViewData["Title"] = "Captain";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<body onload="loadScreen()">
+    <center>
+        <div id="gameCanvas" style="background-color:#000000;width:700px;height:500px;">
+            <table class="captainControls">
+                <tr>
+                    <td>
+                        <button class="btn btn-outline-danger" onclick="alertBattleStations()">Battle Stations!</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-info">Click Me!</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-info">Click Me!</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-info">Click Me!</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-info">Click Me!</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-info">Click Me!</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-info">Click Me!</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </center>
+</body>
+<script src="~/js/CaptainController.js"></script>
