@@ -1,6 +1,6 @@
-﻿var myGameArea;
-var myGamePiece;
-var myObstacles = [];
+﻿var flightArea;
+var shipPieceForFlight;
+var barriers = [];
 var myTimerLabel = {};
 
 function loadScreen() {
@@ -9,20 +9,20 @@ function loadScreen() {
 
 function restartGame() {
     document.getElementById("myrestartbutton").style.display = "none";
-    myGameArea.stop();
-    myGameArea.clear();
-    myGameArea = {};
-    myGamePiece = {};
-    myObstacles = [];
+    flightArea.stop();
+    flightArea.clear();
+    flightArea = {};
+    shipPieceForFlight = {};
+    barriers = [];
     myTimerLabel = {};
     document.getElementById("gameCanvas").innerHTML = "";
     startThrusterFlight()
 }
 
 function startThrusterFlight() {
-    myGameArea = new gamearea();
-    myGamePiece = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 10, 75);
-    myTimerLabel = new component("15px", "Consolas", "white", 10, 25, "text");
+    flightArea = new FlightArea();
+    shipPieceForFlight = new flightComponent(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 10, 75);
+    myTimerLabel = new flightComponent("15px", "Consolas", "white", 10, 25, "text");
     this.endTime = new Date();
     this.endTime.setMinutes(this.endTime.getMinutes() + 1.5);
 
@@ -31,10 +31,10 @@ function startThrusterFlight() {
         document.getElementById("mystartbutton").style.display = "none";
     }
 
-    myGameArea.start();
+    flightArea.start();
 }
 
-function gamearea() {
+function FlightArea() {
     this.canvas = document.createElement("canvas");
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
@@ -46,7 +46,7 @@ function gamearea() {
     this.frameNo = 0;
 
     this.start = function () {
-        this.interval = setInterval(updateGameArea, 10);
+        this.interval = setInterval(updateFlightArea, 10);
 
         this.timerInterval = setInterval(function () {
             this.currentTime = new Date().getTime();
@@ -54,11 +54,11 @@ function gamearea() {
 
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
-            myGameArea.keys = (myGameArea.keys || []);
-            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+            flightArea.keys = (flightArea.keys || []);
+            flightArea.keys[e.keyCode] = (e.type == "keydown");
         })
         window.addEventListener('keyup', function (e) {
-            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+            flightArea.keys[e.keyCode] = (e.type == "keydown");
         })
     }
     this.stop = function () {
@@ -71,7 +71,7 @@ function gamearea() {
     }
 }
 
-function component(width, height, color, x, y, type) {
+function flightComponent(width, height, color, x, y, type) {
 
     this.type = type;
     if (type == "text") {
@@ -86,7 +86,7 @@ function component(width, height, color, x, y, type) {
     this.y = y;
 
     this.update = function () {
-        ctx = myGameArea.context;
+        ctx = flightArea.context;
         if (this.type == "text") {
             ctx.font = this.width + " " + this.height;
             ctx.fillStyle = color;
@@ -113,7 +113,7 @@ function component(width, height, color, x, y, type) {
     }
 }
 
-function updateGameArea() {
+function updateFlightArea() {
     var x, y, min, max, height, gap;
 
     this.currentTime = new Date().getTime();
@@ -128,81 +128,81 @@ function updateGameArea() {
     if (difference < 0) {
         // End Successfully
         clearInterval(this.timerInterval);
-        myGameArea.clear();
-        myGameArea.stop();
+        flightArea.clear();
+        flightArea.stop();
         
         document.getElementById("successLabel").style.display = "block";
         return;
     }
 
-    for (i = 0; i < myObstacles.length; i += 1) {
-        if (myGamePiece.crashWith(myObstacles[i])) {
+    for (i = 0; i < barriers.length; i += 1) {
+        if (shipPieceForFlight.crashWith(barriers[i])) {
             // TODO: failed
-            myGameArea.stop();
+            flightArea.stop();
             
             document.getElementById("myrestartbutton").style.display = "block";
             return;
         }
     }
-    if (myGameArea.pause == false) {
-        myGameArea.clear();
-        myGameArea.frameNo += 1;
+    if (flightArea.pause == false) {
+        flightArea.clear();
+        flightArea.frameNo += 1;
 
         myTimerLabel.text = ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2) + "." + centiseconds;
         myTimerLabel.update();
 
-        if (myGameArea.frameNo == 1 || everyinterval(150)) {
-            x = myGameArea.canvas.width;
-            y = myGameArea.canvas.height - 100;
+        if (flightArea.frameNo == 1 || everyinterval(150)) {
+            x = flightArea.canvas.width;
+            y = flightArea.canvas.height - 100;
             min = 60;
             max = 200;
             height = Math.floor(Math.random() * (max - min + 1) + min);
             min = 50;
             max = 200;
             gap = Math.floor(Math.random() * (max - min + 1) + min);
-            myObstacles.push(new component(OBSTACLE_WIDTH, height, OBSTACLE_COLOR, x, 0));
-            myObstacles.push(new component(OBSTACLE_WIDTH, x - height - gap, OBSTACLE_COLOR, x, height + gap));
+            barriers.push(new flightComponent(OBSTACLE_WIDTH, height, OBSTACLE_COLOR, x, 0));
+            barriers.push(new flightComponent(OBSTACLE_WIDTH, x - height - gap, OBSTACLE_COLOR, x, height + gap));
         }
-        for (i = 0; i < myObstacles.length; i += 1) {
-            myObstacles[i].x += -1;
-            myObstacles[i].update();
+        for (i = 0; i < barriers.length; i += 1) {
+            barriers[i].x += -1;
+            barriers[i].update();
         }
 
-        if (myGameArea.keys && myGameArea.keys[KEY_LEFT]) { moveleft(null); }
-        if (myGameArea.keys && myGameArea.keys[KEY_RIGHT]) { moveright(null); }
-        if (myGameArea.keys && myGameArea.keys[KEY_UP]) { moveup(null); }
-        if (myGameArea.keys && myGameArea.keys[KEY_DOWN]) { movedown(null); }
+        if (flightArea.keys && flightArea.keys[KEY_LEFT]) { moveleft(null); }
+        if (flightArea.keys && flightArea.keys[KEY_RIGHT]) { moveright(null); }
+        if (flightArea.keys && flightArea.keys[KEY_UP]) { moveup(null); }
+        if (flightArea.keys && flightArea.keys[KEY_DOWN]) { movedown(null); }
 
-        myGamePiece.x += myGamePiece.speedX;
-        myGamePiece.y += myGamePiece.speedY;
-        myGamePiece.speedX = 0;
-        myGamePiece.speedY = 0;
-        myGamePiece.update();
+        shipPieceForFlight.x += shipPieceForFlight.speedX;
+        shipPieceForFlight.y += shipPieceForFlight.speedY;
+        shipPieceForFlight.speedX = 0;
+        shipPieceForFlight.speedY = 0;
+        shipPieceForFlight.update();
     }
 }
 
 function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 == 0) { return true; }
+    if ((flightArea.frameNo / n) % 1 == 0) { return true; }
     return false;
 }
 
 function moveup(e) {
-    myGamePiece.speedY = -1;
+    shipPieceForFlight.speedY = -1;
 }
 
 function movedown() {
-    myGamePiece.speedY = 1;
+    shipPieceForFlight.speedY = 1;
 }
 
 function moveleft() {
-    myGamePiece.speedX = -1;
+    shipPieceForFlight.speedX = -1;
 }
 
 function moveright() {
-    myGamePiece.speedX = 1;
+    shipPieceForFlight.speedX = 1;
 }
 
 function clearmove(e) {
-    myGamePiece.speedX = 0;
-    myGamePiece.speedY = 0;
+    shipPieceForFlight.speedX = 0;
+    shipPieceForFlight.speedY = 0;
 }

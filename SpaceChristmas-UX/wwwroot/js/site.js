@@ -56,6 +56,29 @@ function postEvent(event) {
     });
 }
 
+// Components
+function newButton(title) {
+    var button = document.createElement("button");
+
+    button.innerHTML = title;
+
+    return button;
+}
+
+function newContainer(id, style) {
+    var container = document.createElement("div");
+
+    container.id = id;
+    container.style = style;
+
+    return container;
+}
+
+function tearDownView() {
+    document.getElementById("gameCanvas").innerHTML = "";
+}
+// end Components
+
 // tactical combat section
 var tacticalCombatArea;
 var tacticalGamePiece;
@@ -65,7 +88,7 @@ var torpedoRate = 30;
 var torpedoState = torpedoRate + 1;
 var hitPoints = {};
 
-function restartGame() {
+function restartCombat() {
     document.getElementById("myrestartbutton").style.display = "none";
     tacticalCombatArea.stop();
     tacticalCombatArea.clear();
@@ -85,9 +108,9 @@ function restartGame() {
 }
 
 function startTacticalCombat() {
-    tacticalCombatArea = new gamearea();
-    tacticalGamePiece = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 30, CANVAS_HEIGHT / 2);
-    hitPoints = new component("32px", "Consolas", "white", 220, 25, "text");
+    tacticalCombatArea = new CombatArea();
+    tacticalGamePiece = new combatComponent(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, GAME_PIECE_COLOR, 30, CANVAS_HEIGHT / 2);
+    hitPoints = new combatComponent("32px", "Consolas", "white", 220, 25, "text");
     hitPoints.score = 0;
 
     if (document.getElementById("instructionLabel")) {
@@ -98,7 +121,7 @@ function startTacticalCombat() {
     tacticalCombatArea.start();
 }
 
-function gamearea() {
+function CombatArea() {
     this.canvas = document.createElement("canvas");
     this.canvas.id = "innerGameCanvas";
     this.canvas.width = CANVAS_WIDTH;
@@ -111,7 +134,7 @@ function gamearea() {
     this.frameNo = 0;
 
     this.start = function () {
-        this.interval = setInterval(updateGameArea, 20);
+        this.interval = setInterval(updateCombatArea, 20);
 
         window.addEventListener('keydown', function (e) {
             e.preventDefault();
@@ -130,7 +153,7 @@ function gamearea() {
         }
 }
 
-function component(width, height, color, x, y, type) {
+function combatComponent(width, height, color, x, y, type) {
 
     this.type = type;
 
@@ -198,7 +221,7 @@ function calculateAngleToGamePiece(piece) {
     return (angleB - Math.PI / 2);
 }
 
-function updateGameArea() {
+function updateCombatArea() {
     var x, y, min, max, height, gap;
 
     if (hitPoints.score >= 25) {
@@ -232,7 +255,7 @@ function updateGameArea() {
             var restartButton = newButton("Try Again?");
             restartButton.classList.add("btn");
             restartButton.classList.add("btn-primary");
-            restartButton.onclick = restartGame;
+            restartButton.onclick = restartCombat;
             restartContainer.appendChild(restartButton);
 
             document.getElementById("gameCanvas").appendChild(restartContainer);
@@ -262,7 +285,7 @@ function updateGameArea() {
             min = 0;
             max = tacticalCombatArea.canvas.height;
             y = Math.floor(Math.random() * (max - min + 1) + min);
-            var enemy = new component(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, OBSTACLE_COLOR, x, y, "enemy");
+            var enemy = new combatComponent(GAME_PIECE_HEIGHT, GAME_PIECE_HEIGHT, OBSTACLE_COLOR, x, y, "enemy");
             enemy.angle = calculateAngleToGamePiece(enemy);
 
             enemyObjects.push(enemy);
@@ -300,7 +323,7 @@ function updateGameArea() {
 function fireTorpedo() {
     if (torpedoState > torpedoRate) {
         torpedoState = 0;
-        var torpedo = new component(TORPEDO_HEIGHT, TORPEDO_HEIGHT, TORPEDO_COLOR, tacticalGamePiece.x, tacticalGamePiece.y, "torpedo");
+        var torpedo = new combatComponent(TORPEDO_HEIGHT, TORPEDO_HEIGHT, TORPEDO_COLOR, tacticalGamePiece.x, tacticalGamePiece.y, "torpedo");
 
         torpedo.angle = tacticalGamePiece.angle;
         torpedo.speed = TORPEDO_SPEED;
