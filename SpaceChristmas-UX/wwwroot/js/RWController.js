@@ -4,7 +4,74 @@ var barriers = [];
 var myTimerLabel = {};
 
 function loadScreen() {
+    eventQueue.push({
+        "Name": "firstLoad",
+        "TimeStamp": getUTCDatetime(),
+        "Id": uuid(),
+        "Scope": "_local",
+        "Status": "Complete"
+    });
+    setInterval(eventLoop, 100);
+    setInterval(poll, 1000);
+}
 
+function eventLoop() {
+    if (eventQueue.length > 0) {
+        var event = eventQueue[0];
+        eventQueue.splice(0, 1);
+
+        if (event.Name === "prepareTacticalCombat") {
+            tearDownView();
+
+            var instructionContainer = newContainer("instructionLabel", instructionStyle);
+            instructionContainer.innerHTML = "<h3>Use the left and right arrow keys to rotate the gun alignment. Use the space bar to fire torpedos.</h3>";
+
+            var startContainer = newContainer("mystartbutton", startButtonStyle);
+            var startButton = newButton("Start");
+            startButton.classList.add("btn");
+            startButton.classList.add("btn-primary");
+            startButton.onclick = function () {
+                eventQueue.push({
+                    "Name": "startTacticalCombat",
+                    "TimeStamp": getUTCDatetime(),
+                    "Id": uuid(),
+                    "Scope": "_local",
+                    "Status": "Complete"
+                });
+            };
+
+            startContainer.appendChild(startButton);
+
+            document.getElementById("gameCanvas").appendChild(instructionContainer);
+            document.getElementById("gameCanvas").appendChild(startContainer);
+        } else if (event.Name === "startTacticalCombat") {
+            startTacticalCombat();
+        } else if (event.Name === "tacticalCombatSuccess") {
+            tearDownView();
+            firstLoad();
+        } else if (event.Name === "firstLoad") {
+            tearDownView();
+            firstLoad();
+        }
+    }
+}
+
+// core functionality
+function firstLoad() {
+    createCoreUI();
+}
+
+function createCoreUI() {
+    var mainView = newContainer("mainView", instructionStyle);
+    var canvas = document.createElement("canvas");
+    canvas.id = mainCanvasId;
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
+    mainView.appendChild(canvas);
+    var gameContainer = document.getElementById("gameCanvas");
+    gameContainer.appendChild(mainView);
+
+    setupEventListener();
 }
 
 function restartGame() {
@@ -16,7 +83,7 @@ function restartGame() {
     barriers = [];
     myTimerLabel = {};
     document.getElementById("gameCanvas").innerHTML = "";
-    startThrusterFlight()
+    startThrusterFlight();
 }
 
 function startThrusterFlight() {
@@ -34,82 +101,79 @@ function startThrusterFlight() {
     flightArea.start();
 }
 
-function FlightArea() {
-    this.canvas = document.createElement("canvas");
-    this.canvas.width = CANVAS_WIDTH;
-    this.canvas.height = CANVAS_HEIGHT;
-
-    document.getElementById("gameCanvas").appendChild(this.canvas);
-
-    this.context = this.canvas.getContext("2d");
-    this.pause = false;
-    this.frameNo = 0;
-
-    this.start = function () {
-        this.interval = setInterval(updateFlightArea, 10);
-
-        this.timerInterval = setInterval(function () {
-            this.currentTime = new Date().getTime();
-        }, 10); // update every 1/100 sec.
-
-        window.addEventListener('keydown', function (e) {
-            e.preventDefault();
-            flightArea.keys = (flightArea.keys || []);
-            flightArea.keys[e.keyCode] = (e.type == "keydown");
-        })
-        window.addEventListener('keyup', function (e) {
-            flightArea.keys[e.keyCode] = (e.type == "keydown");
-        })
-    }
-    this.stop = function () {
-        clearInterval(this.interval);
-        clearInterval(this.timerInterval);
-        this.pause = true;
-    }
-    this.clear = function () {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+class FlightArea {
+    constructor() {
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = CANVAS_WIDTH;
+        this.canvas.height = CANVAS_HEIGHT;
+        document.getElementById("gameCanvas").appendChild(this.canvas);
+        this.context = this.canvas.getContext("2d");
+        this.pause = false;
+        this.frameNo = 0;
+        this.start = function () {
+            this.interval = setInterval(updateFlightArea, 10);
+            this.timerInterval = setInterval(function () {
+                this.currentTime = new Date().getTime();
+            }, 10); // update every 1/100 sec.
+            window.addEventListener('keydown', function (e) {
+                e.preventDefault();
+                flightArea.keys = (flightArea.keys || []);
+                flightArea.keys[e.keyCode] = (e.type == "keydown");
+            });
+            window.addEventListener('keyup', function (e) {
+                flightArea.keys[e.keyCode] = (e.type == "keydown");
+            });
+        };
+        this.stop = function () {
+            clearInterval(this.interval);
+            clearInterval(this.timerInterval);
+            this.pause = true;
+        };
+        this.clear = function () {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        };
     }
 }
 
-function flightComponent(width, height, color, x, y, type) {
-
-    this.type = type;
-    if (type == "text") {
-        this.text = color;
-    }
-
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;
-    this.x = x;
-    this.y = y;
-
-    this.update = function () {
-        ctx = flightArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else {
-            ctx.fillStyle = color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+class flightComponent {
+    constructor(width, height, color, x, y, type) {
+        this.type = type;
+        if (type == "text") {
+            this.text = color;
         }
-    }
-    this.crashWith = function (otherobj) {
-        var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-        return crash;
+        this.width = width;
+        this.height = height;
+        this.speedX = 0;
+        this.speedY = 0;
+        this.x = x;
+        this.y = y;
+        this.update = function () {
+            this.ctx = flightArea.context;
+            if (this.type == "text") {
+                this.ctx.font = this.width + " " + this.height;
+                this.ctx.fillStyle = color;
+                this.ctx.fillText(this.text, this.x, this.y);
+            }
+            else {
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+        };
+        this.crashWith = function (otherobj) {
+            var myleft = this.x;
+            var myright = this.x + (this.width);
+            var mytop = this.y;
+            var mybottom = this.y + (this.height);
+            var otherleft = otherobj.x;
+            var otherright = otherobj.x + (otherobj.width);
+            var othertop = otherobj.y;
+            var otherbottom = otherobj.y + (otherobj.height);
+            var crash = true;
+            if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+                crash = false;
+            }
+            return crash;
+        };
     }
 }
 
@@ -126,12 +190,22 @@ function updateFlightArea() {
     var centiseconds = Math.floor((difference % (1000 * 60) / 10));
 
     if (difference < 0) {
-        // End Successfully
         clearInterval(this.timerInterval);
-        flightArea.clear();
-        flightArea.stop();
-        
-        document.getElementById("successLabel").style.display = "block";
+        tacticalCombatArea.clear();
+        tacticalCombatArea.stop();
+
+        var successContainer = newContainer("successLabel", successStyle);
+        successContainer.innerHTML = "<h1>Success!!!</h1>";
+        document.getElementById("gameCanvas").appendChild(successContainer);
+
+        setTimeout(() => eventQueue.push({
+            "Name": "flightSuccess",
+            "TimeStamp": getUTCDatetime(),
+            "Id": uuid(),
+            "Scope": "RW",
+            "Status": "Complete"
+        }), 3000);
+
         return;
     }
 
@@ -140,7 +214,14 @@ function updateFlightArea() {
             // TODO: failed
             flightArea.stop();
             
-            document.getElementById("myrestartbutton").style.display = "block";
+            var restartContainer = newContainer("myrestartbutton", restartStyle);
+            var restartButton = newButton("Try Again?");
+            restartButton.classList.add("btn");
+            restartButton.classList.add("btn-primary");
+            restartButton.onclick = restartCombat;
+            restartContainer.appendChild(restartButton);
+
+            document.getElementById("gameCanvas").appendChild(restartContainer);
             return;
         }
     }
@@ -151,7 +232,7 @@ function updateFlightArea() {
         myTimerLabel.text = ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2) + "." + centiseconds;
         myTimerLabel.update();
 
-        if (flightArea.frameNo == 1 || everyinterval(150)) {
+        if (flightArea.frameNo == 1 || everyFlightInterval(150)) {
             x = flightArea.canvas.width;
             y = flightArea.canvas.height - 100;
             min = 60;
@@ -181,7 +262,7 @@ function updateFlightArea() {
     }
 }
 
-function everyinterval(n) {
+function everyFlightInterval(n) {
     if ((flightArea.frameNo / n) % 1 == 0) { return true; }
     return false;
 }

@@ -2,6 +2,7 @@
 var myFrontShield = null;
 var myRearShield = null;
 var name = "LW";
+var shieldInterval = null;
 
 function loadScreen() {
     eventQueue.push({
@@ -11,7 +12,7 @@ function loadScreen() {
         "Scope": "_local",
         "Status": "Complete"
     });
-    setInterval(eventLoop, 10);
+    setInterval(eventLoop, 100);
     setInterval(poll, 1000);
 }
 
@@ -48,6 +49,7 @@ function eventLoop() {
             startTacticalCombat();
         } else if (event.Name === "tacticalCombatSuccess") {
             tearDownView();
+            firstLoad();
         } else if (event.Name === "firstLoad") {
             tearDownView();
             firstLoad();
@@ -59,14 +61,6 @@ function eventLoop() {
 function firstLoad() {
     createCoreUI();
     setupShields();
-}
-
-function getMousePosition(canvas, ev) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-        x: ev.clientX - rect.left,
-        y: ev.clientY - rect.top
-    };
 }
 
 function setupEventListener() {
@@ -93,7 +87,7 @@ function setupShields() {
     myFrontShield = { "active": false, "temp": 0 };
     myRearShield = { "active": false, "temp": 0 };
     drawShipForShields(mainCanvasId);
-    setInterval(updateShieldTemp, 1000);
+    shieldInterval = setInterval(updateShieldTemp, 1000);
 }
 
 function updateShieldTemp() {
@@ -162,6 +156,8 @@ function redrawShieldTemp() {
 
     context.fill(blackForward);
     context.fill(blackVentral);
+
+    context.restore();
 }
 
 function redrawShields(canvas_id) {
@@ -295,4 +291,8 @@ function createCoreUI() {
 
 function tearDownView() {
     document.getElementById("gameCanvas").innerHTML = "";
+    
+    if (shieldInterval) {
+        clearInterval(shieldInterval);
+    }
 }

@@ -56,6 +56,14 @@ function postEvent(event) {
     });
 }
 
+function getMousePosition(canvas, ev) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: ev.clientX - rect.left,
+        y: ev.clientY - rect.top
+    };
+}
+
 // Components
 function newButton(title) {
     var button = document.createElement("button");
@@ -72,10 +80,6 @@ function newContainer(id, style) {
     container.style = style;
 
     return container;
-}
-
-function tearDownView() {
-    document.getElementById("gameCanvas").innerHTML = "";
 }
 // end Components
 
@@ -121,91 +125,87 @@ function startTacticalCombat() {
     tacticalCombatArea.start();
 }
 
-function CombatArea() {
-    this.canvas = document.createElement("canvas");
-    this.canvas.id = "innerGameCanvas";
-    this.canvas.width = CANVAS_WIDTH;
-    this.canvas.height = CANVAS_HEIGHT;
-
-    document.getElementById("gameCanvas").appendChild(this.canvas);
-
-    this.context = this.canvas.getContext("2d");
-    this.pause = false;
-    this.frameNo = 0;
-
-    this.start = function () {
-        this.interval = setInterval(updateCombatArea, 20);
-
-        window.addEventListener('keydown', function (e) {
-            e.preventDefault();
-            tacticalCombatArea.keys = (tacticalCombatArea.keys || []);
-            tacticalCombatArea.keys[e.keyCode] = (e.type == "keydown");
-        })
-        window.addEventListener('keyup', function (e) {
-            tacticalCombatArea.keys[e.keyCode] = (e.type == "keydown");
-        })
-    },
-        this.stop = function () {
-            clearInterval(this.interval);
+class CombatArea {
+    constructor() {
+        this.canvas = document.createElement("canvas");
+        this.canvas.id = "innerGameCanvas";
+        this.canvas.width = CANVAS_WIDTH;
+        this.canvas.height = CANVAS_HEIGHT;
+        document.getElementById("gameCanvas").appendChild(this.canvas);
+        this.context = this.canvas.getContext("2d");
+        this.pause = false;
+        this.frameNo = 0;
+        this.start = function () {
+            this.interval = setInterval(updateCombatArea, 20);
+            window.addEventListener('keydown', function (e) {
+                e.preventDefault();
+                tacticalCombatArea.keys = (tacticalCombatArea.keys || []);
+                tacticalCombatArea.keys[e.keyCode] = (e.type == "keydown");
+            });
+            window.addEventListener('keyup', function (e) {
+                tacticalCombatArea.keys[e.keyCode] = (e.type == "keydown");
+            });
         },
-        this.clear = function () {
-            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        }
+            this.stop = function () {
+                clearInterval(this.interval);
+            },
+            this.clear = function () {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            };
+    }
 }
 
-function combatComponent(width, height, color, x, y, type) {
-
-    this.type = type;
-
-    if (type == "text") {
-        this.text = color;
-    }
-
-    this.speed = 0;
-    this.width = width;
-    this.height = height;
-    this.angle = 0;
-    this.moveAngle = 0;
-    this.x = x;
-    this.y = y;
-
-    this.update = function () {
-        ctx = tacticalCombatArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else {
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.angle);
-            ctx.fillStyle = color;
-            ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
-            ctx.restore();
+class combatComponent {
+    constructor(width, height, color, x, y, type) {
+        this.type = type;
+        if (type == "text") {
+            this.text = color;
         }
-    }
-    this.newPos = function () {
-        if (this.type != "torpedo") {
-            this.angle += this.moveAngle * Math.PI / 180;
-        }
-
-        this.y += this.speed * Math.sin(this.angle);
-        this.x += this.speed * Math.cos(this.angle);
-    }
-    this.crashWith = function (otherobj) {
-        var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        var crash = true;
-        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-        return crash;
+        this.speed = 0;
+        this.width = width;
+        this.height = height;
+        this.angle = 0;
+        this.moveAngle = 0;
+        this.x = x;
+        this.y = y;
+        this.update = function () {
+            this.ctx = tacticalCombatArea.context;
+            if (this.type == "text") {
+                this.ctx.font = this.width + " " + this.height;
+                this.ctx.fillStyle = color;
+                this.ctx.fillText(this.text, this.x, this.y);
+            }
+            else {
+                this.ctx.save();
+                this.ctx.translate(this.x, this.y);
+                this.ctx.rotate(this.angle);
+                this.ctx.fillStyle = color;
+                this.ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+                this.ctx.restore();
+            }
+        };
+        this.newPos = function () {
+            if (this.type != "torpedo") {
+                this.angle += this.moveAngle * Math.PI / 180;
+            }
+            this.y += this.speed * Math.sin(this.angle);
+            this.x += this.speed * Math.cos(this.angle);
+        };
+        this.crashWith = function (otherobj) {
+            var myleft = this.x;
+            var myright = this.x + (this.width);
+            var mytop = this.y;
+            var mybottom = this.y + (this.height);
+            var otherleft = otherobj.x;
+            var otherright = otherobj.x + (otherobj.width);
+            var othertop = otherobj.y;
+            var otherbottom = otherobj.y + (otherobj.height);
+            var crash = true;
+            if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+                crash = false;
+            }
+            return crash;
+        };
     }
 }
 
@@ -279,7 +279,7 @@ function updateCombatArea() {
         hitPoints.update();
 
         // add enemies
-        if (tacticalCombatArea.frameNo == 1 || everyinterval(50)) {
+        if (tacticalCombatArea.frameNo == 1 || tacticalEveryInterval(50)) {
             x = tacticalCombatArea.canvas.width;
 
             min = 0;
@@ -332,7 +332,7 @@ function fireTorpedo() {
     }
 }
 
-function everyinterval(n) {
+function tacticalEveryInterval(n) {
     if ((tacticalCombatArea.frameNo / n) % 1 == 0) { return true; }
     return false;
 }
