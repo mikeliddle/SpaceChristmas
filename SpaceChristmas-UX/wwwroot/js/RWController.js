@@ -19,8 +19,35 @@ function eventLoop() {
     if (eventQueue.length > 0) {
         var event = eventQueue[0];
         eventQueue.splice(0, 1);
+        
+        if (event.Name === "prepareThrusterFlight") {
+            tearDownView();
 
-        if (event.Name === "prepareTacticalCombat") {
+            var instructionContainer = newContainer("instructionLabel", instructionStyle);
+            instructionContainer.innerHTML = "<h3>Use the arrow keys to move the ship through the course. The ship will move forward automatically but you can slow down or speed up with the left/right arrow keys.</h3>";
+
+            var startContainer = newContainer("mystartbutton", startButtonStyle);
+            var startButton = newButton("Start");
+            startButton.classList.add("btn");
+            startButton.classList.add("btn-primary");
+
+            startButton.onclick = function () {
+                eventQueue.push({
+                    "Name": "startThrusterFlight",
+                    "TimeStamp": getUTCDatetime(),
+                    "Id": uuid(),
+                    "Scope": "_local",
+                    "Status": "Complete"
+                });
+            };
+
+            startContainer.appendChild(startButton);
+
+            document.getElementById("gameCanvas").appendChild(instructionContainer);
+            document.getElementById("gameCanvas").appendChild(startContainer);
+        } else if (event.Name === "startThrusterFlight") {
+            startThrusterFlight();
+        } else if (event.Name === "prepareTacticalCombat") {
             tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
@@ -71,7 +98,11 @@ function createCoreUI() {
     var gameContainer = document.getElementById("gameCanvas");
     gameContainer.appendChild(mainView);
 
-    setupEventListener();
+    // setupEventListener();
+}
+
+function tearDownView() {
+    document.getElementById("gameCanvas").innerHTML = "";
 }
 
 function restartGame() {
@@ -191,8 +222,8 @@ function updateFlightArea() {
 
     if (difference < 0) {
         clearInterval(this.timerInterval);
-        tacticalCombatArea.clear();
-        tacticalCombatArea.stop();
+        flightArea.clear();
+        flightArea.stop();
 
         var successContainer = newContainer("successLabel", successStyle);
         successContainer.innerHTML = "<h1>Success!!!</h1>";
@@ -218,7 +249,7 @@ function updateFlightArea() {
             var restartButton = newButton("Try Again?");
             restartButton.classList.add("btn");
             restartButton.classList.add("btn-primary");
-            restartButton.onclick = restartCombat;
+            restartButton.onclick = restartGame;
             restartContainer.appendChild(restartButton);
 
             document.getElementById("gameCanvas").appendChild(restartContainer);
