@@ -4,7 +4,15 @@ let messageCanvasId = "messageCanvas";
 var messageButton = {};
 
 function loadScreen() {
+    eventQueue.push({
+        "Name": "firstLoad",
+        "TimeStamp": getUTCDatetime(),
+        "Id": uuid(),
+        "Scope": "_local",
+        "Status": "Complete"
+    });
     setInterval(eventLoop, 100);
+    setInterval(poll, 1000);
 }
 
 function tearDownView() {
