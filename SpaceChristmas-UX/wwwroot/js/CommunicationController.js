@@ -1,13 +1,106 @@
 ﻿let charSpacing = 20;
+var messages = [];
+let messageCanvasId = "messageCanvas";
+var messageButton = {};
 
 function loadScreen() {
-    var mainContainer = document.getElementById("gameCanvas");
-    var canvas = document.createElement("canvas");
-    canvas.id = "mainCanvas";
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
+    setInterval(eventLoop, 100);
+}
 
-    mainContainer.appendChild(canvas);
+function tearDownView() {
+    document.getElementById("gameCanvas").innerHTML = "";
+}
+
+function drawMessageButton() {
+    var canvas = document.getElementById(messageCanvasId);
+    
+    if (typeof(canvas) == undefined || canvas == null) {
+        canvas = document.createElement("canvas");
+        canvas.id = messageCanvasId;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+        document.getElementById("gameCanvas").appendChild(canvas);
+
+        canvas.addEventListener("mouseup", function (ev) {
+
+            var mousePosition = getMousePosition(canvas, ev);
+            var context = canvas.getContext("2d");
+    
+            if (context.isPointInPath(messageButton, mousePosition.x, mousePosition.y)) {
+                context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                messageButton = null;
+                
+                var message = messages[0];
+                messages.splice(0, 1);
+                message.drawMessage(canvas);
+            }
+        });
+    }
+
+    var context = canvas.getContext("2d");
+    context.save();
+
+    context.fillStyle = "#337ab7";
+    
+    messageButton = new Path2D();
+    messageButton.rect(CANVAS_WIDTH / 2 - 60, CANVAS_HEIGHT / 2 - 12.5, 120, 25);
+    context.fill(messageButton);
+
+    context.fillStyle = "white";
+    context.font = "15px consolas";
+    context.fillText("Show Message", CANVAS_WIDTH / 2 - 50, CANVAS_HEIGHT / 2 + 5);
+
+    context.restore();
+}
+
+function eventLoop() {
+    if (messages.length > 0) {
+        drawMessageButton();
+    }
+
+    if (eventQueue.length > 0) {
+        var event = eventQueue[0];
+        eventQueue.splice(0, 1);
+
+        if (event.Name === "newMessage") {
+            messages.push(new BrailleMessage(event.Value, { "x": 10, "y": 10 }));
+            drawMessageButton();
+        } else if (event.Name === "displayMessage") {
+            message.drawMessage();
+        } else if (event.Name === "prepareTacticalCombat") {
+            tearDownView();
+
+            var instructionContainer = newContainer("instructionLabel", instructionStyle);
+            instructionContainer.innerHTML = "<h3>Use the left and right arrow keys to rotate the gun alignment. Use the space bar to fire torpedos.</h3>";
+
+            var startContainer = newContainer("mystartbutton", startButtonStyle);
+            var startButton = newButton("Start");
+            startButton.classList.add("btn");
+            startButton.classList.add("btn-primary");
+            startButton.onclick = function () {
+                eventQueue.push({
+                    "Name": "startTacticalCombat",
+                    "TimeStamp": getUTCDatetime(),
+                    "Id": uuid(),
+                    "Scope": "_local",
+                    "Status": "Complete"
+                });
+            };
+
+            startContainer.appendChild(startButton);
+
+            document.getElementById("gameCanvas").appendChild(instructionContainer);
+            document.getElementById("gameCanvas").appendChild(startContainer);
+        } else if (event.Name === "startTacticalCombat") {
+            startTacticalCombat();
+        } else if (event.Name === "tacticalCombatSuccess") {
+            tearDownView();
+            firstLoad();
+        } else if (event.Name === "firstLoad") {
+            tearDownView();
+            firstLoad();
+        }
+    }
 }
 
 class BrailleMessage {
@@ -15,6 +108,7 @@ class BrailleMessage {
         this.characters = [];
         this.baseX = location.x;
         this.location = location;
+        message = message.toLowerCase();
 
         for (var i = 0; i < message.length; i++) {
             if (message[i] == " " || message[i] == "." || message[i] == ",") {
@@ -192,14 +286,14 @@ class BrailleCharacter {
         for (var i = 0; i < this.filledDots.length; i++) {
             var dot = this.filledDots[i];
             var dotPath = new Path2D();
-            dotPath.arc(this.dotPositions[dot].x + this.positionOffset.x, this.dotPositions[dot].y + this.positionOffset.y, 2, 0, 2*Math.PI);
+            dotPath.arc(this.dotPositions[dot].x + this.positionOffset.x, this.dotPositions[dot].y + this.positionOffset.y, 2, 0, 2 * Math.PI);
             context.fill(dotPath);
         }
 
         for (var i = 0; i < this.openDots.length; i++) {
             var dot = this.openDots[i];
             var dotPath = new Path2D();
-            dotPath.arc(this.dotPositions[dot].x + this.positionOffset.x, this.dotPositions[dot].y + this.positionOffset.y, 2, 0, 2*Math.PI);
+            dotPath.arc(this.dotPositions[dot].x + this.positionOffset.x, this.dotPositions[dot].y + this.positionOffset.y, 2, 0, 2 * Math.PI);
             context.stroke(dotPath);
         }
 

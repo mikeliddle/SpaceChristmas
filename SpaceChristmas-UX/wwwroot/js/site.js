@@ -4,7 +4,7 @@ var eventQueue = [];
 var eventList = [];
 
 function S4() {
-    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); 
+    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
 }
 
 function uuid() {
@@ -20,13 +20,13 @@ var remoteUrl = "https://localhost:5001/"
 
 function poll(sequenceNumber = 0) {
     if (!sessionStorage.getItem("sessionId")) {
-        return; 
+        return;
     }
 
     var poll = setTimeout(function () {
         $.ajax({
             url: remoteUrl + "api/Events/" + sequenceNumber,
-            headers: { "sessionId": sessionStorage.getItem("sessionId")},
+            headers: { "sessionId": sessionStorage.getItem("sessionId") },
             success: function (response) {
                 var latestEvent = eventList[eventList.length];
 
@@ -56,7 +56,7 @@ function postEvent(event) {
         $.ajax({
             url: remoteUrl + "api/Events",
             method: "POST",
-            headers: { "sessionId": sessionStorage.getItem("sessionId")},
+            headers: { "sessionId": sessionStorage.getItem("sessionId") },
             data: event,
             error: function (xhr, status, e) {
                 console.log(e);
@@ -145,6 +145,7 @@ class CombatArea {
         this.context = this.canvas.getContext("2d");
         this.pause = false;
         this.frameNo = 0;
+
         this.start = function () {
             this.interval = setInterval(updateCombatArea, 20);
             window.addEventListener('keydown', function (e) {
@@ -155,13 +156,13 @@ class CombatArea {
             window.addEventListener('keyup', function (e) {
                 tacticalCombatArea.keys[e.keyCode] = (e.type == "keydown");
             });
-        },
-            this.stop = function () {
-                clearInterval(this.interval);
-            },
-            this.clear = function () {
-                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            };
+        };
+        this.stop = function () {
+            clearInterval(this.interval);
+        };
+        this.clear = function () {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        };
     }
 }
 
