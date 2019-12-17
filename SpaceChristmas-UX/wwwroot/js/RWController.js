@@ -225,9 +225,16 @@ function updateFlightArea() {
         flightArea.clear();
         flightArea.stop();
 
-        var successContainer = newContainer("successLabel", successStyle);
-        successContainer.innerHTML = "<h1>Success!!!</h1>";
-        document.getElementById("gameCanvas").appendChild(successContainer);
+        var canvas = document.getElementById("gameCanvas");
+        
+        var ctx = canvas.getContext("2d");
+        ctx.save();
+        ctx.font = "30 Consolas";
+        ctx.fillStyle = "white";
+
+        ctx.fillText("Success!!!", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+
+        ctx.restore();
 
         setTimeout(() => eventQueue.push({
             "Name": "flightSuccess",
@@ -245,14 +252,31 @@ function updateFlightArea() {
             // TODO: failed
             flightArea.stop();
             
-            var restartContainer = newContainer("myrestartbutton", restartStyle);
-            var restartButton = newButton("Try Again?");
-            restartButton.classList.add("btn");
-            restartButton.classList.add("btn-primary");
-            restartButton.onclick = restartGame;
-            restartContainer.appendChild(restartButton);
+            var canvas = document.getElementById(mainCanvasId);
+            var context = canvas.getContext("2d");
+            context.save();
 
-            document.getElementById("gameCanvas").appendChild(restartContainer);
+            context.fillStyle = "#337ab7";
+            
+            restartButton = new Path2D();
+            restartButton.rect(CANVAS_WIDTH / 2 - 60, CANVAS_HEIGHT / 2 - 12.5, 120, 25);
+            context.fill(restartButton);
+
+            context.fillStyle = "white";
+            context.font = "15px consolas";
+            context.fillText("Try Again", CANVAS_WIDTH / 2 - 38, CANVAS_HEIGHT / 2 + 5);
+
+            context.restore();
+
+            canvas.addEventListener("mouseup", function (ev) {
+
+                var mousePosition = getMousePosition(canvas, ev);
+                var context = canvas.getContext("2d");
+        
+                if (context.isPointInPath(restartButton, mousePosition.x, mousePosition.y)) {
+                    restartCombat();
+                }
+            });
             return;
         }
     }
