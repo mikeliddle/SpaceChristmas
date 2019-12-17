@@ -19,9 +19,14 @@ function getUTCDatetime() {
 var remoteUrl = "https://localhost:5001/"
 
 function poll(sequenceNumber = 0) {
+    if (!sessionStorage.getItem("sessionId")) {
+        return; 
+    }
+
     var poll = setTimeout(function () {
         $.ajax({
             url: remoteUrl + "api/Events/" + sequenceNumber,
+            headers: { "sessionId": sessionStorage.getItem("sessionId")},
             success: function (response) {
                 var latestEvent = eventList[eventList.length];
 
@@ -43,10 +48,15 @@ function postEvent(event) {
         return;
     }
 
+    if (!sessionStorage.getItem("sessionId")) {
+        return;
+    }
+
     var post = setTimeout(function () {
         $.ajax({
             url: remoteUrl + "api/Events",
             method: "POST",
+            headers: { "sessionId": sessionStorage.getItem("sessionId")},
             data: event,
             error: function (xhr, status, e) {
                 console.log(e);

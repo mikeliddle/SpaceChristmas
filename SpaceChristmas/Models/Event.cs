@@ -39,5 +39,11 @@ namespace SpaceChristmas.Models
         /// The status of the command.
         /// </summary>
         public Status Status { get; set; }
+
+        [JsonProperty]
+        /// <summary>
+        /// The id of the session the event belongs to.
+        /// </summary>
+        public Guid SessionId { get; set; }
     }
 }

@@ -19,23 +19,40 @@ namespace SpaceChristmas.Controllers
         {
             _context = context;
             _context.Database.EnsureCreated();
-            //var latestEvent = _context.Event.LastOrDefault
         }
 
         // GET: api/Events
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvent()
         {
-            return await _context.Event.ToListAsync();
+            try
+            {
+                var sessionId = Request.Headers["sessionId"];
+                var @event = _context.Event.Include(e => e.SessionId == sessionId);
+
+                return await @event.ToListAsync();
+            } 
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         // GET: api/Events/<int>
         [HttpGet("{sequenceNumber}")]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvent(int sequenceNumber)
         {
-            var @event = _context.Event.Include(e => e.SequenceNumber > sequenceNumber);
+            try
+            {
+                var sessionId = Request.Headers["sessionId"];
+                var @event = _context.Event.Include(e => e.SequenceNumber > sequenceNumber && e.SessionId == sessionId);
 
-            return await @event.ToListAsync();
+                return await @event.ToListAsync();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         // PUT: api/Events/<guid>
@@ -76,8 +93,19 @@ namespace SpaceChristmas.Controllers
         [HttpPost]
         public async Task<ActionResult<Event>> PostEvent(Event @event)
         {
+            try
+            {
+                Guid sessionId = new Guid(Request.Headers["sessionId"]);
+                @event.SessionId = sessionId;
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+
             this.sequenceNumber += 1;
             @event.SequenceNumber = this.sequenceNumber;
+
             try
             {
                 _context.Event.Add(@event);
@@ -95,8 +123,11 @@ namespace SpaceChristmas.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(Guid id)
         {
+            Guid sessionId = new Guid(Request.Headers["sessionId"]);
+            
             var @event = await _context.Event.FindAsync(id);
-            if (@event == null)
+
+            if (@event == null || @event.SessionId != sessionId)
             {
                 return NotFound();
             }
@@ -109,7 +140,8 @@ namespace SpaceChristmas.Controllers
 
         private bool EventExists(Guid id)
         {
-            return _context.Event.Any(e => e.Id == id);
+            Guid sessionId = new Guid(Request.Headers["sessionId"]);
+            return _context.Event.Any(e => e.Id == id && e.SessionId == sessionId);
         }
     }
 }
