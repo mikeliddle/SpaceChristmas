@@ -6,8 +6,10 @@
 
     <div class="text-center">
         <h1 class="display-4">Welcome</h1>
-
+        @{ var sessionId = ""; }
         
+        @if (sessionId != "" )
+        {
             <div class="dropdown">
                 <button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown">
                     Select Your Position<span class="caret"></span>
@@ -21,4 +23,14 @@
                     <li><a class="nav-link text-dark" asp-page="/Security">Security</a></li>
                 </ul>
             </div>
+        }
+        else
+        {
+            <div class="form-group">
+                <input type="text" class="form-control" id="group-code-input" placeholder="Group Code" style="text-align: center;">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        }
     </div>

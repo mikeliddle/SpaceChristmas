@@ -211,9 +211,11 @@ class combatComponent {
             var othertop = otherobj.y;
             var otherbottom = otherobj.y + (otherobj.height);
             var crash = true;
+
             if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
                 crash = false;
             }
+            
             return crash;
         };
     }
