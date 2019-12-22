@@ -242,7 +242,7 @@ function updateCombatArea() {
         tacticalCombatArea.clear();
         tacticalCombatArea.stop();
 
-        var canvas = document.getElementById("gameCanvas");
+        var canvas = document.getElementById(mainCanvasId);
         
         var ctx = canvas.getContext("2d");
         ctx.save();
