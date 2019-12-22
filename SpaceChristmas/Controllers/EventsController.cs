@@ -95,7 +95,7 @@ namespace SpaceChristmas.Controllers
         {
             try
             {
-                Guid sessionId = new Guid(Request.Headers["sessionId"]);
+                string sessionId = Request.Headers["sessionId"];
                 @event.SessionId = sessionId;
             }
             catch (Exception)
@@ -123,7 +123,7 @@ namespace SpaceChristmas.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(Guid id)
         {
-            Guid sessionId = new Guid(Request.Headers["sessionId"]);
+            string sessionId = Request.Headers["sessionId"];
             
             var @event = await _context.Event.FindAsync(id);
 
@@ -140,7 +140,7 @@ namespace SpaceChristmas.Controllers
 
         private bool EventExists(Guid id)
         {
-            Guid sessionId = new Guid(Request.Headers["sessionId"]);
+            string sessionId = Request.Headers["sessionId"];
             return _context.Event.Any(e => e.Id == id && e.SessionId == sessionId);
         }
     }

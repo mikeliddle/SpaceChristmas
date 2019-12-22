@@ -44,7 +44,7 @@ namespace SpaceChristmas.Models
         /// <summary>
         /// The id of the session the event belongs to.
         /// </summary>
-        public Guid SessionId { get; set; }
+        public string SessionId { get; set; }
 
         [JsonProperty]
         /// <summary>

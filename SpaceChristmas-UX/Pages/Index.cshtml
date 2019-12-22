@@ -8,27 +8,37 @@
         <h1 class="display-4">Welcome</h1>
         <div id="mainContainer">
             <script>
-                if (sessionStorage.getItem("sessionId") != null) {
+                function getSessionId () {
+                    var groupCode = document.getElementById("group-code-input").value;
+                    sessionStorage.setItem("sessionId", groupCode);
+                    displayDropDown();
+                }
+
+                function displayDropDown () {
                     document.getElementById("mainContainer").innerHTML = '<div class="dropdown">' +
-                '<button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown">' +
-                    'Select Your Position<span class="caret"></span>' +
-                '</button>' +
-                '<ul class="dropdown-menu">' +
-                    '<li><a class="nav-link text-dark" asp-page="/Captain">Captain</a></li>' +
-                    '<li><a class="nav-link text-dark" asp-page="/Captain">First Officer</a></li>' +
-                    '<li><a class="nav-link text-dark" asp-page="/RightWing">Right Wing</a></li>' +
-                    '<li><a class="nav-link text-dark" asp-page="/Engineering">Engineer 1</a></li>' +
-                    '<li><a class="nav-link text-dark" asp-page="/LeftWing">Engineer 2</a></li>' +
-                    '<li><a class="nav-link text-dark" asp-page="/Communications">Communications</a></li>' +
-                    '<li><a class="nav-link text-dark" asp-page="/Security">Security</a></li>' +
-                '</ul></div>'
+                    '<button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown">' +
+                        'Select Your Position<span class="caret"></span>' +
+                    '</button>' +
+                    '<ul class="dropdown-menu">' +
+                        '<li><a class="nav-link text-dark" href="/Captain">Captain</a></li>' +
+                        '<li><a class="nav-link text-dark" href="/Captain">First Officer</a></li>' +
+                        '<li><a class="nav-link text-dark" href="/RightWing">Right Wing</a></li>' +
+                        '<li><a class="nav-link text-dark" href="/Engineering">Engineer 1</a></li>' +
+                        '<li><a class="nav-link text-dark" href="/LeftWing">Engineer 2</a></li>' +
+                        '<li><a class="nav-link text-dark" href="/Communications">Communications</a></li>' +
+                        '<li><a class="nav-link text-dark" href="/Security">Security</a></li>' +
+                    '</ul></div>'
+                }
+
+                if (sessionStorage.getItem("sessionId") != null) {
+                    displayDropDown();    
                 } else {
                     document.getElementById("mainContainer").innerHTML = '<div class="form-group">' +
                 '<input type="text" class="form-control" id="group-code-input" placeholder="Group Code" style="text-align: center;">' +
-            '</div>' +
-            '<div class="form-group">' +
-                '<button type="submit" class="btn btn-primary">Submit</button>' +
-            '</div>'
+                    '</div>' +
+                '<div class="form-group">' +
+                    '<button type="submit" class="btn btn-primary" onclick="getSessionId()">Submit</button>' +
+                '</div>'
                 }
             </script>
         </div>  
