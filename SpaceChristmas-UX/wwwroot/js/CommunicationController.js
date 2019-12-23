@@ -15,6 +15,10 @@ function loadScreen() {
     setInterval(poll, 1000);
 }
 
+function firstLoad() {
+    
+}
+
 function tearDownView() {
     document.getElementById("gameCanvas").innerHTML = "";
 }

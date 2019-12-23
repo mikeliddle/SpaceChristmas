@@ -25,6 +25,47 @@ function loadScreen() {
     setInterval(poll, 1000);
 }
 
+function changeAlertFromLocal(to) {
+    var event = {
+        "Name": "alertStatusChanged",
+        "TimeStamp": getUTCDatetime(),
+        "Scope": "all",
+        "Value": "" + to,
+        "Id": uuid(),
+        "Status": "Complete"
+    };
+
+    eventQueue.push(event);
+    postEvent(event);
+}
+
+function changeAlert(to) {
+    if (to == 4) {
+        document.getElementById('battleStationsButton').disabled = false;
+    } else {
+        document.getElementById('battleStationsButton').disabled = true;
+    }
+
+    document.getElementById("AlertText").innerHTML = to;
+
+    switch(to) {
+        case 1:
+            document.getElementById("AlertColor").className = "text-success";
+            break;
+        case 2:
+            document.getElementById("AlertColor").className = "text-primary";
+            break;
+        case 3:
+            document.getElementById("AlertColor").className = "text-warning";
+            break;
+        case 4:
+            document.getElementById("AlertColor").className = "text-danger";
+            break;
+        default:
+            break;
+    }
+}
+
 function tearDownView() {
     document.getElementById("gameCanvas").innerHTML = "";
 }
@@ -35,16 +76,16 @@ function firstLoad() {
                 '<h1 class="text-success" id="AlertColor">Alert Status: <span id="AlertText">1</span></h1>' +
             '</td></tr><tr><td></td></tr>' +
         '<tr><td>' +
-                '<button class="btn btn-outline-success" onclick="document.getElementById(\'AlertColor\').className = \'text-success\'; document.getElementById(\'AlertText\').innerHTML = 1;">Alert 1!</button>' +
+                '<button class="btn btn-outline-success" onclick="changeAlertFromLocal(1);">Alert 1!</button>' +
             '</td></tr>' +
         '<tr><td>' +
-                '<button class="btn btn-outline-primary" onclick="document.getElementById(\'AlertColor\').className = \'text-primary\'; document.getElementById(\'AlertText\').innerHTML = 2;">Alert 2!</button>' +
+                '<button class="btn btn-outline-primary" onclick="changeAlertFromLocal(2);">Alert 2!</button>' +
             '</td></tr>' +
         '<tr><td>' +
-                '<button class="btn btn-outline-warning" onclick="document.getElementById(\'AlertColor\').className = \'text-warning\'; document.getElementById(\'AlertText\').innerHTML = 3;">Alert 3!</button>' +
+                '<button class="btn btn-outline-warning" onclick="changeAlertFromLocal(3);">Alert 3!</button>' +
             '</td></tr>' +
         '<tr><td>' +
-                '<button class="btn btn-outline-danger" onclick="document.getElementById(\'AlertColor\').className = \'text-danger\'; document.getElementById(\'AlertText\').innerHTML = 4; document.getElementById(\'battleStationsButton\').disabled = false;">Alert 4!</button>' +
+                '<button class="btn btn-outline-danger" onclick="changeAlertFromLocal(4); ">Alert 4!</button>' +
             '</td><td>' +
                 '<button id="battleStationsButton" class="btn btn-outline-danger" onclick="alertBattleStations()" disabled>Battle Stations!</button>' +
             '</td></tr>' +
@@ -88,6 +129,8 @@ function eventLoop() {
         } else if (event.Name === "firstLoad") {
             //tearDownView();
             firstLoad();
+        } else if (event.Name === "alertStatusChanged") {
+            changeAlert(event.Value);
         }
     }
 }
