@@ -19,7 +19,7 @@ function eventLoop() {
     if (eventQueue.length > 0) {
         var event = eventQueue[0];
         eventQueue.splice(0, 1);
-        
+
         if (event.Name === "prepareThrusterFlight") {
             tearDownView();
 
@@ -88,13 +88,160 @@ function firstLoad() {
     createCoreUI();
 }
 
+var nav_x = "";
+var nav_y = "";
+var nav_z = "";
+
+function navigate() {
+    nav_x = document.getElementById("x").value;
+    nav_y = document.getElementById("y").value;
+    nav_z = document.getElementById("z").value;
+
+    var event = {
+        "Name": "changedNavigation",
+        "Id": uuid(),
+        "Timestamp": getUTCDatetime(),
+        "Scope": "all",
+        "Status": "Complete",
+        "Value": `${nav_x},${nav_y},${nav_z}`
+    };
+
+    eventQueue.push(event);
+}
+
+function changeSpeed(speed) {
+    var event = {
+        "Name": "changedNavigation",
+        "Id": uuid(),
+        "Timestamp": getUTCDatetime(),
+        "Scope": "all",
+        "Status": "Complete"
+    };
+
+    if (speed == 0) {
+        event.Value = "Stopped";
+        document.getElementById("speedLabel").innerHTML = "Stopped";
+    } else if (speed == 10) {
+        event.Value = "Hyperspeed";
+        document.getElementById("speedLabel").innerHTML = "Hyperspeed";
+    } else {
+        event.Value = speed.toElement.innerText;
+        document.getElementById("speedLabel").innerHTML = speed.toElement.innerText;
+    }
+
+    eventQueue.push(event);
+}
+
 function createCoreUI() {
     var mainView = newContainer("mainView", instructionStyle);
-    var canvas = document.createElement("canvas");
-    canvas.id = mainCanvasId;
-    canvas.width = CANVAS_WIDTH;
-    canvas.height = CANVAS_HEIGHT;
-    mainView.appendChild(canvas);
+    var tableView = document.createElement("table");
+    tableView.id = "tableView";
+    tableView.width = CANVAS_WIDTH;
+    tableView.height = CANVAS_HEIGHT;
+
+    // X Row
+    var row = document.createElement("tr");
+
+    var cell = document.createElement("td");
+    cell.style = "width: 10px;";
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<h3>X: </h3>";
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<input id=\"x\" type=\"text\" />";
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.colSpan = 2;
+    cell.rowSpan = 4;
+    cell.innerHTML = "<h1>Speed: <span id=\"speedLabel\">Stopped</span></h1>";
+    row.appendChild(cell);
+    tableView.appendChild(row);
+
+    // Y Row
+    row = document.createElement("tr");
+    cell = document.createElement("td");
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<h3>Y: </h3>";
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<input id=\"y\" type=\"text\" />";
+    row.appendChild(cell);
+    tableView.appendChild(row);
+
+    // Z Row
+    row = document.createElement("tr");
+    cell = document.createElement("td");
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<h3>Z: </h3>";
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<input id=\"z\" type=\"text\" />";
+    row.appendChild(cell);
+    tableView.appendChild(row);
+
+    // Button Row
+    row = document.createElement("tr");
+    cell = document.createElement("td");
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    row.appendChild(cell);
+    cell = document.createElement("td");
+    cell.innerHTML = "<center><button class=\"btn btn-success\" onclick=\"navigate()\">Navigate</button></center>";
+    row.appendChild(cell);
+    tableView.appendChild(row);
+
+    row = document.createElement("tr");
+    cell = document.createElement("td");
+    row.appendChild(cell);
+
+    mainView.appendChild(tableView);
+
+    tableView = document.createElement("table");
+    tableView.style = "margin-top: 10px;";
+    tableView.cellPadding = 10;
+    row = document.createElement("tr");
+
+    cell = document.createElement("td");
+    var btn = document.createElement("button");
+    btn.id = "fullStopBtn";
+    btn.innerHTML = "Full Stop"
+    btn.onclick = function () { changeSpeed(0); };
+    btn.className += "btn btn-primary";
+
+    cell.appendChild(btn);
+    row.appendChild(cell);
+
+    for (var i = 2; i < 6; i++) {
+        cell = document.createElement("td");
+
+        btn = document.createElement("button");
+        btn.id = `Impulse${i}`;
+        btn.innerHTML = `Impulse ${i - 1}`;
+        var str = `Impulse ${i - 1}`
+        btn.onclick = changeSpeed;
+        btn.className += "btn btn-primary";
+
+        cell.appendChild(btn);
+        row.appendChild(cell);
+    }
+
+    cell = document.createElement("td");
+
+    btn = document.createElement("button");
+    btn.id = "Hyperspeed"
+    btn.innerHTML = `Hyperspeed`;
+    btn.onclick = function () { changeSpeed(10); };
+    btn.className += "btn btn-warning";
+
+    cell.appendChild(btn);
+    row.appendChild(cell);
+
+    tableView.appendChild(row);
+    mainView.appendChild(tableView);
+
     var gameContainer = document.getElementById("gameCanvas");
     gameContainer.appendChild(mainView);
 
@@ -226,7 +373,7 @@ function updateFlightArea() {
         flightArea.stop();
 
         var canvas = document.getElementById(mainCanvasId);
-        
+
         var ctx = canvas.getContext("2d");
         ctx.save();
         ctx.font = "30 Consolas";
@@ -251,13 +398,13 @@ function updateFlightArea() {
         if (shipPieceForFlight.crashWith(barriers[i])) {
             // TODO: failed
             flightArea.stop();
-            
+
             var canvas = document.getElementById(mainCanvasId);
             var context = canvas.getContext("2d");
             context.save();
 
             context.fillStyle = "#337ab7";
-            
+
             restartButton = new Path2D();
             restartButton.rect(CANVAS_WIDTH / 2 - 60, CANVAS_HEIGHT / 2 - 12.5, 120, 25);
             context.fill(restartButton);
@@ -272,7 +419,7 @@ function updateFlightArea() {
 
                 var mousePosition = getMousePosition(canvas, ev);
                 var context = canvas.getContext("2d");
-        
+
                 if (context.isPointInPath(restartButton, mousePosition.x, mousePosition.y)) {
                     restartCombat();
                 }

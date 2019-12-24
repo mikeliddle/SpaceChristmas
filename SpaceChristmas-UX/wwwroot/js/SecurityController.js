@@ -1,4 +1,8 @@
-﻿function loadScreen() {
+﻿function firstLoad() {
+    
+}
+
+function loadScreen() {
     eventQueue.push({
         "Name": "firstLoad",
         "TimeStamp": getUTCDatetime(),
