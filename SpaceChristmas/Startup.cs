@@ -33,6 +33,9 @@ namespace SpaceChristmas
                 builder => 
                 {
                     builder.WithMethods("GET").AllowAnyOrigin();
+                    builder.WithMethods("POST").AllowAnyOrigin();
+                    builder.WithHeaders("sessionId").AllowAnyOrigin();
+                    builder.WithHeaders("content-type").AllowAnyOrigin();
                 });
             });
             services.AddControllers();

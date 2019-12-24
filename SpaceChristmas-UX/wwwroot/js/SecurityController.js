@@ -1,5 +1,4 @@
 ﻿function firstLoad() {
-    
 }
 
 function loadScreen() {
@@ -18,12 +17,34 @@ function tearDownView() {
     document.getElementById("gameCanvas").innerHTML = "";
 }
 
+function scanShips(text) {
+    document.getElementById("gameCanvas").innerHTML = `<h3>${document.getElementById("placeholder").value}</h3>`;
+}
+
+function addButton(label, text) {
+    tearDownView();
+
+    var button = document.createElement("button");
+    button.innerHTML = label;
+    var placeholder = document.createElement("input");
+    placeholder.id = "placeholder";
+    placeholder.value = text;
+    placeholder.hidden = true;
+    button.onclick = scanShips;
+    button.style = "margin-top: 30px;";
+    button.className += "btn btn-primary";
+
+    var container = document.getElementById("gameCanvas");
+    container.appendChild(button);
+    container.appendChild(placeholder);
+}
+
 function eventLoop() {
     if (eventQueue.length > 0) {
         var event = eventQueue[0];
         eventQueue.splice(0, 1);
 
-        if (event.Name === "prepareTacticalCombat") {
+        if (event.Name === "prepareTacticalCombat" || event.name === "prepareTacticalCombat") {
             tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
@@ -39,7 +60,7 @@ function eventLoop() {
                     "TimeStamp": getUTCDatetime(),
                     "Id": uuid(),
                     "Scope": "_local",
-                    "Status": "Complete"
+                    "Status": 0
                 });
             };
 
@@ -47,14 +68,18 @@ function eventLoop() {
 
             document.getElementById("gameCanvas").appendChild(instructionContainer);
             document.getElementById("gameCanvas").appendChild(startContainer);
-        } else if (event.Name === "startTacticalCombat") {
+        } else if (event.Name === "startTacticalCombat" || event.name === "startTacticalCombat") {
             startTacticalCombat();
-        } else if (event.Name === "tacticalCombatSuccess") {
+        } else if (event.Name === "tacticalCombatSuccess" || event.name === "tacticalCombatSuccess") {
             tearDownView();
             firstLoad();
-        } else if (event.Name === "firstLoad") {
+        } else if (event.Name === "firstLoad" || event.name === "firstLoad") {
             tearDownView();
             firstLoad();
+        } else if (event.Name === "ScanLocalNeeded" || event.name === "ScanLocalNeeded") {
+            addButton("Scan Ship", event.Value);
+        } else if (event.Name === "ScanShipsNeeded" || event.name === "ScanShipsNeeded") {
+            addButton("Scan Other Ships", event.Value);
         }
     }
 }

@@ -20,7 +20,7 @@ function eventLoop() {
         var event = eventQueue[0];
         eventQueue.splice(0, 1);
 
-        if (event.Name === "prepareThrusterFlight") {
+        if (event.Name === "prepareThrusterFlight" || event.name === "prepareThrusterFlight") {
             tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
@@ -45,9 +45,9 @@ function eventLoop() {
 
             document.getElementById("gameCanvas").appendChild(instructionContainer);
             document.getElementById("gameCanvas").appendChild(startContainer);
-        } else if (event.Name === "startThrusterFlight") {
+        } else if (event.Name === "startThrusterFlight" || event.name === "startThrusterFlight") {
             startThrusterFlight();
-        } else if (event.Name === "prepareTacticalCombat") {
+        } else if (event.Name === "prepareTacticalCombat" || event.name === "prepareTacticalCombat") {
             tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
@@ -71,12 +71,12 @@ function eventLoop() {
 
             document.getElementById("gameCanvas").appendChild(instructionContainer);
             document.getElementById("gameCanvas").appendChild(startContainer);
-        } else if (event.Name === "startTacticalCombat") {
+        } else if (event.Name === "startTacticalCombat" || event.name === "startTacticalCombat") {
             startTacticalCombat();
-        } else if (event.Name === "tacticalCombatSuccess") {
+        } else if (event.Name === "tacticalCombatSuccess" || event.name === "tacticalCombatSuccess") {
             tearDownView();
             firstLoad();
-        } else if (event.Name === "firstLoad") {
+        } else if (event.Name === "firstLoad" || event.name === "firstLoad") {
             tearDownView();
             firstLoad();
         }

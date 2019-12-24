@@ -1,10 +1,10 @@
 ﻿function alertBattleStations() {
     var event = {
-        "Name": "prepareTacticalCombat",
-        "Id": uuid(),
-        "Timestamp": getUTCDatetime(),
-        "Scope": "all",
-        "Status": "Issued"
+        Name: "prepareTacticalCombat",
+        Id: uuid(),
+        Timetamp: getUTCDatetime(),
+        Scope: "all",
+        Status: 0
     };
 
     eventList.push(event);
@@ -15,11 +15,11 @@
 
 function loadScreen() {
     eventQueue.push({
-        "Name": "firstLoad",
-        "TimeStamp": getUTCDatetime(),
-        "Id": uuid(),
-        "Scope": "_local",
-        "Status": "Complete"
+        Name: "firstLoad",
+        TimeStamp: getUTCDatetime(),
+        Id: uuid(),
+        Scope: "_local",
+        Status: 0
     });
     setInterval(eventLoop, 100);
     setInterval(poll, 1000);
@@ -27,12 +27,12 @@ function loadScreen() {
 
 function changeAlertFromLocal(to) {
     var event = {
-        "Name": "alertStatusChanged",
-        "TimeStamp": getUTCDatetime(),
-        "Scope": "all",
-        "Value": "" + to,
-        "Id": uuid(),
-        "Status": "Complete"
+        Name: "alertStatusChanged",
+        TimeStamp: getUTCDatetime(),
+        Scope: "all",
+        Value: "" + to,
+        Id: uuid(),
+        Status: 0
     };
 
     eventQueue.push(event);
@@ -49,16 +49,16 @@ function changeAlert(to) {
     document.getElementById("AlertText").innerHTML = to;
 
     switch(to) {
-        case 1:
+        case "1":
             document.getElementById("AlertColor").className = "text-success";
             break;
-        case 2:
+        case "2":
             document.getElementById("AlertColor").className = "text-primary";
             break;
-        case 3:
+        case "3":
             document.getElementById("AlertColor").className = "text-warning";
             break;
-        case 4:
+        case "4":
             document.getElementById("AlertColor").className = "text-danger";
             break;
         default:
@@ -97,7 +97,7 @@ function eventLoop() {
         var event = eventQueue[0];
         eventQueue.splice(0, 1);
 
-        if (event.Name === "prepareTacticalCombat") {
+        if (event.name === "prepareTacticalCombat" || event.Name === "prepareTacticalCombat" ) {
             tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
@@ -109,11 +109,11 @@ function eventLoop() {
             startButton.classList.add("btn-primary");
             startButton.onclick = function () {
                 eventQueue.push({
-                    "Name": "startTacticalCombat",
-                    "TimeStamp": getUTCDatetime(),
-                    "Id": uuid(),
-                    "Scope": "_local",
-                    "Status": "Complete"
+                    Name: "startTacticalCombat",
+                    TimeStamp: getUTCDatetime(),
+                    Id: uuid(),
+                    Scope: "_local",
+                    Status: 0
                 });
             };
 
@@ -121,15 +121,15 @@ function eventLoop() {
 
             document.getElementById("gameCanvas").appendChild(instructionContainer);
             document.getElementById("gameCanvas").appendChild(startContainer);
-        } else if (event.Name === "startTacticalCombat") {
+        } else if (event.name === "startTacticalCombat" || event.Name === "startTacticalCombat" ) {
             startTacticalCombat();
-        } else if (event.Name === "tacticalCombatSuccess") {
+        } else if (event.name === "tacticalCombatSuccess" || event.Name === "tacticalCombatSuccess" ) {
             tearDownView();
             firstLoad();
-        } else if (event.Name === "firstLoad") {
+        } else if (event.name === "firstLoad" || event.Name === "firstLoad" ) {
             //tearDownView();
             firstLoad();
-        } else if (event.Name === "alertStatusChanged") {
+        } else if (event.name === "alertStatusChanged" || event.Name === "alertStatusChanged" ) {
             changeAlert(event.Value);
         }
     }

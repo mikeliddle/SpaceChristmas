@@ -28,11 +28,11 @@ namespace SpaceChristmas.Controllers
             try
             {
                 var sessionId = Request.Headers["sessionId"];
-                var @event = _context.Event.Include(e => e.SessionId == sessionId);
+                var @event = _context.Event.Where(e => e.SessionId.Equals(sessionId));
 
                 return await @event.ToListAsync();
             } 
-            catch (Exception)
+            catch (Exception e)
             {
                 return BadRequest();
             }
@@ -44,12 +44,12 @@ namespace SpaceChristmas.Controllers
         {
             try
             {
-                var sessionId = Request.Headers["sessionId"];
-                var @event = _context.Event.Include(e => e.SequenceNumber > sequenceNumber && e.SessionId == sessionId);
+                var sessionId = Request.Headers["sessionId"].ToString();
+                var @event = _context.Event.Where(e => e.SequenceNumber > sequenceNumber && e.SessionId.Equals(sessionId));
 
                 return await @event.ToListAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return BadRequest();
             }

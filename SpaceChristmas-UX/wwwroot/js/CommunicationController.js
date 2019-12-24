@@ -74,12 +74,12 @@ function eventLoop() {
         var event = eventQueue[0];
         eventQueue.splice(0, 1);
 
-        if (event.Name === "newMessage") {
+        if (event.Name === "newMessage" || event.name === "newMessage") {
             messages.push(new BrailleMessage(event.Value, { "x": 10, "y": 10 }));
             drawMessageButton();
-        } else if (event.Name === "displayMessage") {
+        } else if (event.Name === "displayMessage" || event.name === "displayMessage") {
             message.drawMessage();
-        } else if (event.Name === "prepareTacticalCombat") {
+        } else if (event.Name === "prepareTacticalCombat" || event.name === "prepareTacticalCombat") {
             tearDownView();
 
             var instructionContainer = newContainer("instructionLabel", instructionStyle);
@@ -103,12 +103,12 @@ function eventLoop() {
 
             document.getElementById("gameCanvas").appendChild(instructionContainer);
             document.getElementById("gameCanvas").appendChild(startContainer);
-        } else if (event.Name === "startTacticalCombat") {
+        } else if (event.Name === "startTacticalCombat" || event.name === "startTacticalCombat") {
             startTacticalCombat();
-        } else if (event.Name === "tacticalCombatSuccess") {
+        } else if (event.Name === "tacticalCombatSuccess" || event.name === "tacticalCombatSuccess") {
             tearDownView();
             firstLoad();
-        } else if (event.Name === "firstLoad") {
+        } else if (event.Name === "firstLoad" || event.name === "firstLoad") {
             tearDownView();
             firstLoad();
         }
@@ -123,7 +123,7 @@ class BrailleMessage {
         message = message.toLowerCase();
 
         for (var i = 0; i < message.length; i++) {
-            if (message[i] in "., :;'\"-()") {
+            if ("., :;'\"-()".indexOf(message[i]) != -1) {
                 if (this.location.x >= CANVAS_WIDTH - 100) {
                     this.location.y += 35;
                     this.location.x = this.baseX;

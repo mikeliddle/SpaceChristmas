@@ -11,12 +11,20 @@ function uuid() {
     return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0, 3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();
 }
 
-function getUTCDatetime() {
-    var now = new Date();
-    return `${now.getUTCFullYear()}-${now.getUTCMonth}-${now.getUTCDate}T:${now.getUTCHours}:${now.getUTCMinutes}:${now.getUTCSeconds}.${now.getUTCMilliseconds}Z`
+function pad(number) {
+    if (number < 10) {
+        return "0" + number
+    }
+    return number
 }
 
-var remoteUrl = "http://spacechristmas-dev-as.azurewebsites.net/"
+function getUTCDatetime() {
+    var now = new Date();
+    return `${now.getUTCFullYear()}-${pad(now.getUTCMonth())}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}.${now.getUTCMilliseconds()}Z`
+}
+
+var remoteUrl = "https://localhost:44316/"
+var globalSequenceNumber = 0;
 
 function poll(sequenceNumber = 0) {
     if (!sessionStorage.getItem("sessionId")) {
@@ -25,16 +33,16 @@ function poll(sequenceNumber = 0) {
 
     var poll = setTimeout(function () {
         $.ajax({
-            url: remoteUrl + "api/Events/" + sequenceNumber,
+            url: remoteUrl + "api/Events/" + globalSequenceNumber,
             headers: { "sessionId": sessionStorage.getItem("sessionId") },
             success: function (response) {
-                var latestEvent = eventList[eventList.length];
+                // var latestEvent = eventList[eventList.length];
 
-                for (var event in response) {
-                    if (event.TimeStamp > latestEvent.TimeStamp) {
-                        eventList.push(event);
-                        eventQueue.push(event);
-                    }
+                for (var i = 0; i < response.length; i++) {
+                        globalSequenceNumber += 1;
+                        eventList.push(response[i]);
+                        eventQueue.push(response[i]);
+                    // }
                 }
             },
             dataType: "json"
@@ -56,10 +64,10 @@ function postEvent(event) {
         $.ajax({
             url: remoteUrl + "api/Events",
             method: "POST",
-            headers: { "sessionId": sessionStorage.getItem("sessionId") },
-            data: event,
+            headers: { "sessionId": sessionStorage.getItem("sessionId"), "content-type": "application/json" },
+            data: JSON.stringify(event),
             error: function (xhr, status, e) {
-                console.log(e);
+                console.log(xhr);
             },
             dataType: "json"
         })
@@ -112,11 +120,11 @@ function restartCombat() {
     hitPoints = {};
     document.getElementById("gameCanvas").innerHTML = "";
     eventQueue.push({
-        "Name": "startTacticalCombat",
-        "TimeStamp": getUTCDatetime(),
-        "Id": uuid(),
-        "Scope": "_local",
-        "Status": "Complete"
+        Name: "startTacticalCombat",
+        TimeStamp: getUTCDatetime(),
+        Id: uuid(),
+        Scope: "_local",
+        Status: "Complete"
     });
 }
 
@@ -254,11 +262,11 @@ function updateCombatArea() {
         ctx.restore();
 
         setTimeout(() => eventQueue.push({
-            "Name": "tacticalCombatSuccess",
-            "TimeStamp": getUTCDatetime(),
-            "Id": uuid(),
-            "Scope": "LW",
-            "Status": "Complete"
+            Name: "tacticalCombatSuccess",
+            TimeStamp: getUTCDatetime(),
+            Id: uuid(),
+            Scope: "LW",
+            Status: "Complete"
         }), 3000);
 
         return;
