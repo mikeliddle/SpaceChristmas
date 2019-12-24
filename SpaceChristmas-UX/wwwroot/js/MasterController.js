@@ -24,26 +24,30 @@ function triggerThrusterFlight() {
 }
 
 function updateSecurityStatus(text) {
+    var nameAndValue = evt.toElement.innerText.split("#");
+    
     var event = {
-        "Name": "newMessage",
+        "Name": nameAndValue[0],
         "Id": uuid(),
         "Scope": "security",
         "TimeStamp": getUTCDatetime(),
         "Status": "pending",
-        "Value": evt.toElement.innerText
+        "Value": nameAndValue[1]
     };
 
     postEvent(event);
 }
 
 function updateEngineeringStatus(text) {
+    var nameAndValue = evt.toElement.innerText.split("#");
+
     var event = {
-        "Name": "newMessage",
+        "Name": nameAndValue[0],
         "Id": uuid(),
         "Scope": "engineering",
         "TimeStamp": getUTCDatetime(),
         "Status": "pending",
-        "Value": evt.toElement.innerText
+        "Value": nameAndValue[1]
     };
 
     postEvent(event);
