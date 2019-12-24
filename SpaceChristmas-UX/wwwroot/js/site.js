@@ -16,7 +16,7 @@ function getUTCDatetime() {
     return `${now.getUTCFullYear()}-${now.getUTCMonth}-${now.getUTCDate}T:${now.getUTCHours}:${now.getUTCMinutes}:${now.getUTCSeconds}.${now.getUTCMilliseconds}Z`
 }
 
-var remoteUrl = "https://localhost:5001/"
+var remoteUrl = "http://spacechristmas-dev-as.azurewebsites.net/"
 
 function poll(sequenceNumber = 0) {
     if (!sessionStorage.getItem("sessionId")) {
