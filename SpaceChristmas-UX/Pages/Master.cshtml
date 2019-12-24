@@ -9,23 +9,26 @@
 <body onload="loadScreen()">
     <center>
         <div id="gameCanvas" style="background-color:#000000;width:700px;height:500px;">
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Shields</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Coordinates to Nal Hutta 100,50,75</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Hutts will challenge you to a game of 21</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Hutts can be very tempermental. They love to send bounty hunters after those who cross them. Be careful</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: You need to negotiate for safe passage through Hutt space</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Planet is safe for landing. Hutts will not admit you as agents of NASA. You will need a disguise.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Planet is safe for landing. Hutts will not admit you as agents of NASA. You will need a disguise.</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Coordinates to kessel 200,75,25</button>
             <br />
 
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: hutts angry. incoming bounty hunters. jump to hyperspace</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Incoming ships, Heavily armed, non-registered.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Incoming ships, Heavily armed, non-registered.</button>
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Scanners</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Bounty hunters will locate you on kessel, make sure to make things quick on kessel.</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Hutts will not allow you to travel back through hutt space. you must take the detour past mandalore</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Coordinates to nebula cloud 200,100,25</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: the people of kessel will likely give you an initial fuel shipment</button>
             <br />
 
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanLocalNeeded#No additional organic cargo on ship.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanLocalNeeded#No additional organic cargo on ship.</button>
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Hyperdrive</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Manual flight is required through the nebula cloud.</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Be cautious of the gravity fields. They will be marked on the map.</button>
             <button class="btn btn-warning" onclick="triggerThrusterFlight()">Trigger Thruster Flight</button>
@@ -34,20 +37,24 @@
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Coordinates to Mandalore 100,150,100</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Mandalorians can be very aggressive. Be cautious going through mandalorian space.</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Mandalorians have a lot of warrior traditions.  they forge their armor from their ancestors armor. they also are expert warriors and do not tolerate weakness.</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Ships have acquired a lock on your ship. Prepare for impact.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Ships have acquired a lock on your ship. Prepare for impact.</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Mandalorians have detected you. proceed with caution</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanLocalNeeded#EMP is attached to engines, causing them to lose power.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanLocalNeeded#EMP is attached to engines, causing them to lose power.</button>
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Engines</button>
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Shields</button>
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Navigation</button>
+            <button class="btn btn-success" onclick="updateEngineeringStatus(this)">SystemOffline#Weapons</button>
             <br />
             
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Your Mission has been considdered a success. Please return to Alderaan for your reward.</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Coordinates to alderaan 0,0,0</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: urgent: your presents have been stolen by the sith and relocated to the sith planet dathomir</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Coordinates to Dathomir 50,150,100</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Light sith craft incoming. Heavily armed. Aggressive</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Light sith craft incoming. Heavily armed. Aggressive</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: Sith fleet has detected your presence, prepare to send everyone to battle stations</button>
             <button class="btn btn-primary" onclick="sendMessage(this)">NASA Control to Shadow 5: wave one defeated, prepare for the second wave.</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanLocalNeeded#Ship is not damaged.</button>
-            <button class="btn btn-primary" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Planet is unstable. Surrounding the landing area is a lot of lava.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanLocalNeeded#Ship is not damaged.</button>
+            <button class="btn btn-danger" onclick="updateSecurityStatus(this)">ScanShipsNeeded#Planet is unstable. Surrounding the landing area is a lot of lava.</button>
             <br />
 
         </div>
