@@ -123,7 +123,7 @@ class BrailleMessage {
         message = message.toLowerCase();
 
         for (var i = 0; i < message.length; i++) {
-            if (message[i] == " " || message[i] == "." || message[i] == ",") {
+            if (message[i] in "., :;'\"-()") {
                 if (this.location.x >= CANVAS_WIDTH - 100) {
                     this.location.y += 35;
                     this.location.x = this.baseX;
@@ -182,6 +182,46 @@ class BrailleCharacter {
     ]
 
     alphabet = {
+        "1": {
+            "filled": [1],
+            "open": [2, 3, 4, 5, 6]
+        },
+        "2": {
+            "filled": [1, 3],
+            "open": [2, 4, 5, 6]
+        },
+        "3": {
+            "filled": [1, 2],
+            "open": [3, 4, 5, 6]
+        },
+        "4": {
+            "filled": [1, 2, 4],
+            "open": [3, 5, 6]
+        },
+        "5": {
+            "filled": [1, 4],
+            "open": [2, 3, 5, 6]
+        },
+        "6": {
+            "filled": [1, 2, 3],
+            "open": [4, 5, 6]
+        },
+        "7": {
+            "filled": [1, 2, 3, 4],
+            "open": [5, 6]
+        },
+        "8": {
+            "filled": [1, 3, 4],
+            "open": [2, 5, 6]
+        },
+        "9": {
+            "filled": [2, 3],
+            "open": [1, 4, 5, 6]
+        },
+        "0": {
+            "filled": [2, 3, 4],
+            "open": [1, 5, 6]
+        },
         "a": {
             "filled": [1],
             "open": [2, 3, 4, 5, 6]
