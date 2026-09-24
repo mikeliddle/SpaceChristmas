@@ -20,57 +20,88 @@ function pad(number) {
 
 function getUTCDatetime() {
     var now = new Date();
-    return `${now.getUTCFullYear()}-${pad(now.getUTCMonth())}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}.${now.getUTCMilliseconds()}Z`
+    return `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}.${String(now.getUTCMilliseconds()).padStart(3, "0")}Z`
 }
 
-var remoteUrl = "https://localhost:44316/"
 var globalSequenceNumber = 0;
+var pollInFlight = false;
 
-function poll(sequenceNumber = 0) {
-    if (!sessionStorage.getItem("sessionId")) {
+function redirectOnUnauthorized(xhr) {
+    if (xhr.status === 401 || xhr.status === 403) {
+        window.location.assign(window.location.pathname.toLowerCase() === "/master" ? "/Admin/Login" : "/Index");
+        return true;
+    }
+    return false;
+}
+
+function poll() {
+    if (pollInFlight) {
         return;
     }
 
-    var poll = setTimeout(function () {
-        $.ajax({
-            url: remoteUrl + "api/Events/" + globalSequenceNumber,
-            headers: { "sessionId": sessionStorage.getItem("sessionId") },
-            success: function (response) {
-                // var latestEvent = eventList[eventList.length];
+    pollInFlight = true;
+    var hasMore = false;
+    $.ajax({
+        url: "/api/events/" + globalSequenceNumber,
+        dataType: "json",
+        success: function (response) {
+            if (!response || !Array.isArray(response.Events) ||
+                !Number.isSafeInteger(response.Cursor)) {
+                return;
+            }
 
-                for (var i = 0; i < response.length; i++) {
-                        globalSequenceNumber += 1;
-                        eventList.push(response[i]);
-                        eventQueue.push(response[i]);
-                    // }
+            var lastSequenceNumber = globalSequenceNumber;
+            for (var i = 0; i < response.Events.length; i++) {
+                var sequenceNumber = response.Events[i].SequenceNumber;
+                if (!Number.isSafeInteger(sequenceNumber) || sequenceNumber <= lastSequenceNumber) {
+                    return;
                 }
-            },
-            dataType: "json"
-        })
-    }, 1000);
+                lastSequenceNumber = sequenceNumber;
+            }
+            if (response.Cursor !== lastSequenceNumber) {
+                return;
+            }
+
+            for (var i = 0; i < response.Events.length; i++) {
+                eventList.push(response.Events[i]);
+                eventQueue.push(response.Events[i]);
+            }
+            globalSequenceNumber = response.Cursor;
+            hasMore = response.Events.length === 200;
+        },
+        error: redirectOnUnauthorized,
+        complete: function () {
+            pollInFlight = false;
+            if (hasMore) {
+                poll();
+            }
+        }
+    });
 }
 
 function postEvent(event) {
-    if (event.scope === "_local") {
-        // quit out early if we can.
+    if (event.Scope === "_local") {
         return;
     }
 
-    if (!sessionStorage.getItem("sessionId")) {
-        return;
-    }
-
-    var post = setTimeout(function () {
-        $.ajax({
-            url: remoteUrl + "api/Events",
-            method: "POST",
-            headers: { "sessionId": sessionStorage.getItem("sessionId"), "content-type": "application/json" },
-            data: JSON.stringify(event),
-            error: function (xhr, status, e) {
-                console.log(xhr);
-            },
-            dataType: "json"
-        })
+    return $.ajax({
+        url: "/api/events",
+        method: "POST",
+        headers: { "X-SpaceChristmas-Request": "1" },
+        contentType: "application/json",
+        data: JSON.stringify({
+            Id: event.Id,
+            TimeStamp: event.TimeStamp,
+            Name: event.Name,
+            Scope: event.Scope,
+            Status: event.Status,
+            Value: event.Value === undefined ? null : event.Value
+        }),
+        error: function (xhr) {
+            if (!redirectOnUnauthorized(xhr)) {
+                console.error("Unable to send event:", xhr.status);
+            }
+        }
     });
 }
 
@@ -86,7 +117,7 @@ function getMousePosition(canvas, ev) {
 function newButton(title) {
     var button = document.createElement("button");
 
-    button.innerHTML = title;
+    button.textContent = title;
 
     return button;
 }
@@ -124,7 +155,7 @@ function restartCombat() {
         TimeStamp: getUTCDatetime(),
         Id: uuid(),
         Scope: "_local",
-        Status: "Complete"
+        Status: 0
     });
 }
 
@@ -266,7 +297,7 @@ function updateCombatArea() {
             TimeStamp: getUTCDatetime(),
             Id: uuid(),
             Scope: "LW",
-            Status: "Complete"
+            Status: 0
         }), 3000);
 
         return;

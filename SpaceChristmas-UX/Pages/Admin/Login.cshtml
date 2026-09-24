@@ -1,0 +1,18 @@
+@page
+@{
+    ViewData["Title"] = "Admin login";
+}
+
+<div class="mx-auto" style="max-width: 24rem;">
+    <h1>Admin login</h1>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="adminPassword">Admin password</label>
+            <input id="adminPassword" type="password" class="form-control" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Sign in</button>
+        <p id="loginError" class="text-warning mt-3" role="alert" hidden></p>
+    </form>
+</div>
+
+<script src="~/js/AdminLogin.js" asp-append-version="true"></script>

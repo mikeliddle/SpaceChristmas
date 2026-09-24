@@ -9,7 +9,7 @@ function loadScreen() {
         "TimeStamp": getUTCDatetime(),
         "Id": uuid(),
         "Scope": "_local",
-        "Status": "Complete"
+        "Status": 0
     });
     setInterval(eventLoop, 100);
     setInterval(poll, 1000);
@@ -37,7 +37,7 @@ function eventLoop() {
                     "TimeStamp": getUTCDatetime(),
                     "Id": uuid(),
                     "Scope": "_local",
-                    "Status": "Complete"
+                    "Status": 0
                 });
             };
 
@@ -63,7 +63,7 @@ function eventLoop() {
                     "TimeStamp": getUTCDatetime(),
                     "Id": uuid(),
                     "Scope": "_local",
-                    "Status": "Complete"
+                    "Status": 0
                 });
             };
 
@@ -100,9 +100,9 @@ function navigate() {
     var event = {
         "Name": "changedNavigation",
         "Id": uuid(),
-        "Timestamp": getUTCDatetime(),
+        "TimeStamp": getUTCDatetime(),
         "Scope": "all",
-        "Status": "Complete",
+        "Status": 0,
         "Value": `${nav_x},${nav_y},${nav_z}`
     };
 
@@ -113,9 +113,9 @@ function changeSpeed(speed) {
     var event = {
         "Name": "changedNavigation",
         "Id": uuid(),
-        "Timestamp": getUTCDatetime(),
+        "TimeStamp": getUTCDatetime(),
         "Scope": "all",
-        "Status": "Complete"
+        "Status": 0
     };
 
     if (speed == 0) {
@@ -388,7 +388,7 @@ function updateFlightArea() {
             "TimeStamp": getUTCDatetime(),
             "Id": uuid(),
             "Scope": "RW",
-            "Status": "Complete"
+            "Status": 0
         }), 3000);
 
         return;

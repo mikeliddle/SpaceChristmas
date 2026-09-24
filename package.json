@@ -1,0 +1,10 @@
+{
+  "name": "spacechristmas-browser-smoke",
+  "private": true,
+  "scripts": {
+    "smoke:browser": "node browser-smoke.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

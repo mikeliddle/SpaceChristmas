@@ -1,147 +1,103 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpaceChristmas.Models;
 
-namespace SpaceChristmas.Controllers
+namespace SpaceChristmas.Controllers;
+
+public record EventRequest(
+    [Required] Guid Id,
+    [Required] DateTime TimeStamp,
+    [Required, StringLength(128, MinimumLength = 1)] string Name,
+    [Required, StringLength(128, MinimumLength = 1)] string Scope,
+    Status Status,
+    [StringLength(8192)] string? Value);
+
+public record EventResponse(Guid Id, long SequenceNumber, DateTime TimeStamp,
+    string Name, string Scope, Status Status, Guid SessionId, string? Value)
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class EventsController : ControllerBase
+    public static EventResponse From(Event evt) =>
+        new(evt.Id, evt.SequenceNumber, evt.TimeStamp, evt.Name, evt.Scope,
+            evt.Status, evt.SessionId, evt.Value);
+}
+
+public record EventPage(IReadOnlyList<EventResponse> Events, long Cursor);
+
+[ApiController]
+[Authorize(Policy = "Session")]
+[Route("api/events")]
+public class EventsController(EventContext context) : ControllerBase
+{
+    private Guid SessionId => Guid.Parse(User.FindFirstValue("session")!);
+
+    [HttpGet]
+    [HttpGet("{cursor:long}")]
+    public async Task<ActionResult<EventPage>> Get(long cursor = 0)
     {
-        private readonly EventContext _context;
-        private int sequenceNumber = 0;
+        if (cursor < 0) return BadRequest("Cursor must be nonnegative.");
 
-        public EventsController(EventContext context)
+        var events = await context.Events.AsNoTracking()
+            .Where(e => e.SessionId == SessionId && e.SequenceNumber > cursor)
+            .OrderBy(e => e.SequenceNumber).Take(200).ToListAsync();
+        var response = events.Select(EventResponse.From).ToList();
+        return new EventPage(response, response.Count == 0 ? cursor : response[^1].SequenceNumber);
+    }
+
+    [HttpGet("by-id/{id:guid}")]
+    public async Task<ActionResult<EventResponse>> GetById(Guid id)
+    {
+        var evt = await context.Events.AsNoTracking()
+            .SingleOrDefaultAsync(e => e.Id == id && e.SessionId == SessionId);
+        return evt is null ? NotFound() : EventResponse.From(evt);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<EventResponse>> Post(EventRequest request)
+    {
+        if (request.Id == Guid.Empty || request.TimeStamp == default || !Enum.IsDefined(request.Status))
+            return BadRequest("A valid ID, timestamp and status are required.");
+
+        var evt = new Event
         {
-            _context = context;
-            _context.Database.EnsureCreated();
-        }
+            Id = request.Id,
+            SessionId = SessionId,
+            TimeStamp = request.TimeStamp,
+            Name = request.Name,
+            Scope = request.Scope,
+            Status = request.Status,
+            Value = request.Value
+        };
+        context.Events.Add(evt);
+        await context.SaveChangesAsync();
+        return Created($"/api/events/by-id/{evt.Id}", EventResponse.From(evt));
+    }
 
-        // GET: api/Events
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvent()
-        {
-            try
-            {
-                var sessionId = Request.Headers["sessionId"];
-                var @event = _context.Event.Where(e => e.SessionId.Equals(sessionId));
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Put(Guid id, EventRequest request)
+    {
+        if (id != request.Id || request.TimeStamp == default || !Enum.IsDefined(request.Status))
+            return BadRequest("Event ID, timestamp or status is invalid.");
 
-                return await @event.ToListAsync();
-            } 
-            catch (Exception e)
-            {
-                return BadRequest();
-            }
-        }
+        var evt = await context.Events.SingleOrDefaultAsync(e => e.Id == id && e.SessionId == SessionId);
+        if (evt is null) return NotFound();
+        evt.Name = request.Name;
+        evt.Scope = request.Scope;
+        evt.Status = request.Status;
+        evt.TimeStamp = request.TimeStamp;
+        evt.Value = request.Value;
+        await context.SaveChangesAsync();
+        return NoContent();
+    }
 
-        // GET: api/Events/<int>
-        [HttpGet("{sequenceNumber}")]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvent(int sequenceNumber)
-        {
-            try
-            {
-                var sessionId = Request.Headers["sessionId"].ToString();
-                var @event = _context.Event.Where(e => e.SequenceNumber > sequenceNumber && e.SessionId.Equals(sessionId));
-
-                return await @event.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
-        }
-
-        // PUT: api/Events/<guid>
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEvent(Guid id, Event @event)
-        {
-            if (id != @event.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(@event).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EventExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Events
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see https://aka.ms/RazorPagesCRUD.
-        [HttpPost]
-        public async Task<ActionResult<Event>> PostEvent(Event @event)
-        {
-            try
-            {
-                string sessionId = Request.Headers["sessionId"];
-                @event.SessionId = sessionId;
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-
-            this.sequenceNumber += 1;
-            @event.SequenceNumber = this.sequenceNumber;
-
-            try
-            {
-                _context.Event.Add(@event);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetEvent", new { id = @event.Id }, @event);
-            }
-            catch (DbUpdateException)
-            {
-                return BadRequest("Duplicate Id Error!");
-            }
-        }
-
-        // DELETE: api/Events/<guid>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Event>> DeleteEvent(Guid id)
-        {
-            string sessionId = Request.Headers["sessionId"];
-            
-            var @event = await _context.Event.FindAsync(id);
-
-            if (@event == null || @event.SessionId != sessionId)
-            {
-                return NotFound();
-            }
-
-            _context.Event.Remove(@event);
-            await _context.SaveChangesAsync();
-
-            return @event;
-        }
-
-        private bool EventExists(Guid id)
-        {
-            string sessionId = Request.Headers["sessionId"];
-            return _context.Event.Any(e => e.Id == id && e.SessionId == sessionId);
-        }
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var evt = await context.Events.SingleOrDefaultAsync(e => e.Id == id && e.SessionId == SessionId);
+        if (evt is null) return NotFound();
+        context.Events.Remove(evt);
+        await context.SaveChangesAsync();
+        return NoContent();
     }
 }

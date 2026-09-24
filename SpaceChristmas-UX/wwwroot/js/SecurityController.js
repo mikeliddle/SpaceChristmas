@@ -7,7 +7,7 @@ function loadScreen() {
         "TimeStamp": getUTCDatetime(),
         "Id": uuid(),
         "Scope": "_local",
-        "Status": "Complete"
+        "Status": 0
     });
     setInterval(eventLoop, 100);
     setInterval(poll, 1000);
@@ -18,14 +18,17 @@ function tearDownView() {
 }
 
 function scanShips(text) {
-    document.getElementById("gameCanvas").innerHTML = `<h3>${document.getElementById("placeholder").value}</h3>`;
+    var message = document.createElement("h3");
+    message.textContent = document.getElementById("placeholder").value;
+    var container = document.getElementById("gameCanvas");
+    container.replaceChildren(message);
 }
 
 function addButton(label, text) {
     tearDownView();
 
     var button = document.createElement("button");
-    button.innerHTML = label;
+    button.textContent = label;
     var placeholder = document.createElement("input");
     placeholder.id = "placeholder";
     placeholder.value = text;

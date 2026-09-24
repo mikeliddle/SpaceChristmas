@@ -2,7 +2,7 @@
     var event = {
         Name: "prepareTacticalCombat",
         Id: uuid(),
-        Timetamp: getUTCDatetime(),
+        TimeStamp: getUTCDatetime(),
         Scope: "all",
         Status: 0
     };
@@ -46,7 +46,7 @@ function changeAlert(to) {
         document.getElementById('battleStationsButton').disabled = true;
     }
 
-    document.getElementById("AlertText").innerHTML = to;
+    document.getElementById("AlertText").textContent = to;
 
     switch(to) {
         case "1":

@@ -1,0 +1,11 @@
+.git
+.github
+**/bin
+**/obj
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/TestResults
+SpaceChristmas.Tests
+node_modules
+publish

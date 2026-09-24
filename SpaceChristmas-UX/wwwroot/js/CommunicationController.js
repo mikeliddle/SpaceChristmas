@@ -9,7 +9,7 @@ function loadScreen() {
         "TimeStamp": getUTCDatetime(),
         "Id": uuid(),
         "Scope": "_local",
-        "Status": "Complete"
+        "Status": 0
     });
     setInterval(eventLoop, 100);
     setInterval(poll, 1000);
@@ -95,7 +95,7 @@ function eventLoop() {
                     "TimeStamp": getUTCDatetime(),
                     "Id": uuid(),
                     "Scope": "_local",
-                    "Status": "Complete"
+                    "Status": 0
                 });
             };
 
